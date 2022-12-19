@@ -13,7 +13,7 @@ $ export CROSS_COMPILE=arm-linux-gnueabi-
 $ make defconfig
 # CONFIG_STATIC=y (Settings > Build static binary (no shared libs))
 # CONFIG_PREFIX="$HOME/linux-kernel-labs/modules/nfsroot" (Settings > Destination path for 'make install')
-$ make -j 8
+$ make -j $(nproc)
 $ make install
 ```
 
@@ -27,9 +27,15 @@ $ make install
 $ vim ${NFSROOT}/etc/init.d/rcS
 ```
 
-**Restarting NFS server**
+```
+$ sudo apt-get install nfs-kernel-server
+$ sudo echo "$HOME/linux-kernel-labs/modules/nfsroot 192.168.1.100(rw,no_root_squash,no_subtree_check)" >> /etc/exports
+```
+
+Restarting NFS server
 ```sh
-sudo /etc/init.d/nfs-kernel-server restart
+$ sudo exportfs -r
+$ sudo /etc/init.d/nfs-kernel-server restart
 ```
 
 **Uboot Environment Variables**
