@@ -55,3 +55,4 @@ busybox
 modules
 linux
 tftp-server-files
+gcc-arm

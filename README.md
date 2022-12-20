@@ -13,6 +13,13 @@ $ sudo vim /etc/default/tftpd-hpa
 $ sudo /etc/init.d/tftpd-hpa restart
 ```
 
+**Download + Extract Latest Cross Compiler Tools**
+Latest toolchain can be found at [linaro.org](https://releases.linaro.org/components/toolchain/binaries/)
+```
+$ tar xvf ~/Downloads/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf.tar.xz -C $(pwd)
+$ mv gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf gcc-arm
+```
+
 **Creating NFS root filesystem**
 ```sh
 $ git clone git://git.busybox.net/busybox.git
@@ -24,18 +31,43 @@ $ make defconfig
 # CONFIG_PREFIX="$HOME/linux-kernel-labs/modules/nfsroot" (Settings > Destination path for 'make install')
 $ make -j $(nproc)
 $ make install
+# Should now see 4 folders (usr,bin,etc,sbin) and a file (linuxrc)
 ```
 
+Populating rootfs:
+Busybox init will first look for `/etc/init.d/rcS` script, if it can’t find that then
+it will look for `/etc/inittab`. Inittab file will mount the virtual filesystem using
+fstab. Also, it will have the command for getting login prompt and shell.
 ```
-# Add to file
-#!/bin/sh
-# mount -t proc none /proc
-# mount -t sysfs none /sys
-# exec sh
+$ cd modules/nfsroot
+$ mkdir -p dev lib usr/lib proc sys root etc
+$ sudo mknod dev/console c 5 1
+$ sudo mknod dev/null c 1 3
+$ sudo mknod dev/zero c 1 5
+$ sudo chown -v vince:vince dev/*
 
-$ vim ${NFSROOT}/etc/init.d/rcS
+$ cat >> etc/inittab
+null::sysinit:/bin/mount -a
+null::sysinit:/bin/hostname -F /etc/hostname
+null::respawn:/bin/cttyhack /bin/login root
+null::restart:/sbin/reboot
+[CTRL-D]
+
+$ cat >> etc/fstab
+proc  /proc proc  defaults  0 0
+sysfs /sys  sysfs defaults  0 0
+[CTRL-D]
+
+$ cat >> etc/hostname
+great_grand_embedded
+[CTRL-D]
+
+$ cat >> etc/passwd
+root::0:0:root:/root:/bin/sh
+[CTRL-D]
 ```
 
+Installing server to watch
 ```
 $ sudo apt install nfs-kernel-server
 $ sudo echo "$HOME/linux-kernel-labs/modules/nfsroot 192.168.1.100(rw,no_root_squash,no_subtree_check)" >> /etc/exports
