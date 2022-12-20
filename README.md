@@ -43,7 +43,7 @@ Busybox init will first look for `/etc/init.d/rcS` script, if it can’t find th
 it will look for `/etc/inittab`. Inittab file will mount the virtual filesystem using
 fstab. Also, it will have the command for getting login prompt and shell.
 ```
-$ cd modules/nfsroot
+$ cd ${CDIR}/modules/nfsroot
 $ mkdir -p dev lib usr/lib proc sys root etc
 $ sudo mknod dev/console c 5 1
 $ sudo mknod dev/null c 1 3
@@ -69,6 +69,10 @@ great_grand_embedded
 $ cat >> etc/passwd
 root::0:0:root:/root:/bin/sh
 [CTRL-D]
+
+$ cd $CDIR
+$ cp -a ${CDIR}/gcc-arm/arm-linux-gnueabihf/lib/* ${CDIR}/modules/nfsroot/lib/
+$ cp -a ${CDIR}/gcc-arm/arm-linux-gnueabihf/lib/* ${CDIR}/modules/nfsroot/usr/lib/
 ```
 
 Installing server to watch
@@ -138,8 +142,8 @@ $ make omap2plus_defconfig
 # CONFIG_USB_MUSB_HDRC=y
 # CONFIG_USB_MUSB_GADGET=y
 # CONFIG_USB_MUSB_DSPS=y
+# CONFIG_NOP_USB_XCEIV=y
 # CONFIG_AM335X_PHY_USB=y
-# CONFIG_USB_ETH=y
 # CONFIG_USB_ETH=y
 # CONFIG_KERNEL_LZO=y
 $ make -j$(($(nproc)/2))
