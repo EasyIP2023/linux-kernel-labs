@@ -132,7 +132,6 @@ $ git remote add stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/l
 $ git fetch stable
 # Choose stable branch to develop off of
 
-$ . env.sh
 $ make omap2plus_defconfig
 # Add kernel config symbols
 # CONFIG_USB_GADGET=y
