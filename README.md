@@ -14,18 +14,22 @@ $ sudo /etc/init.d/tftpd-hpa restart
 ```
 
 **Download + Extract Latest Cross Compiler Tools**
+
 Latest toolchain can be found at [linaro.org](https://releases.linaro.org/components/toolchain/binaries/)
-```
+```sh
 $ tar xvf ~/Downloads/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf.tar.xz -C $(pwd)
 $ mv gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf gcc-arm
+```
+
+**Enter Dev Environment**
+```sh
+$ . ./env.sh
 ```
 
 **Creating NFS root filesystem**
 ```sh
 $ git clone git://git.busybox.net/busybox.git
 $ cd busybox/
-$ export ARCH=arm
-$ export CROSS_COMPILE=arm-linux-gnueabi-
 $ make defconfig
 # CONFIG_STATIC=y (Settings > Build static binary (no shared libs))
 # CONFIG_PREFIX="$HOME/linux-kernel-labs/modules/nfsroot" (Settings > Destination path for 'make install')
