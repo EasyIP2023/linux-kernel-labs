@@ -1,0 +1,78 @@
+From 18edec60d468fd80e3e758eb7a2bee5dfedfa62a Mon Sep 17 00:00:00 2001
+From: Vincent Davis Jr <vince@underview.tech>
+Date: Mon, 26 Dec 2022 16:46:30 -0600
+Subject: [PATCH] hello-version-lab-01-complete
+
+Signed-off-by: Vincent Davis Jr <vince@underview.tech>
+---
+ drivers/misc/Kconfig         |  5 +++++
+ drivers/misc/Makefile        |  1 +
+ drivers/misc/hello_version.c | 28 ++++++++++++++++++++++++++++
+ 3 files changed, 34 insertions(+)
+ create mode 100644 drivers/misc/hello_version.c
+
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index 358ad56f6524..25f39f970c7f 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -5,6 +5,11 @@
+ 
+ menu "Misc devices"
+ 
++config HELLO
++	tristate "Hello module"
++	help
++	  Greeting module
++
+ config SENSORS_LIS3LV02D
+ 	tristate
+ 	depends on INPUT
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index ac9b3e757ba1..85ec377e65c7 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -3,6 +3,7 @@
+ # Makefile for misc devices that really don't fit anywhere else.
+ #
+ 
++obj-$(CONFIG_HELLO)		+= hello_version.o
+ obj-$(CONFIG_IBM_ASM)		+= ibmasm/
+ obj-$(CONFIG_IBMVMC)		+= ibmvmc.o
+ obj-$(CONFIG_AD525X_DPOT)	+= ad525x_dpot.o
+diff --git a/drivers/misc/hello_version.c b/drivers/misc/hello_version.c
+new file mode 100644
+index 000000000000..76879783b5bb
+--- /dev/null
++++ b/drivers/misc/hello_version.c
+@@ -0,0 +1,28 @@
++// SPDX-License-Identifier: GPL-2.0
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/utsname.h>
++#include <linux/timekeeping.h>
++
++static char *who = "World";
++module_param(who, charp, 0644);
++MODULE_PARM_DESC(who, "Person to greet");
++
++static time64_t init_time;
++
++static int __init hello_init(void)
++{
++	pr_info("Hello %s. You are currently using Linux %s.\n", who, utsname()->release);
++	init_time = ktime_get_seconds();
++	return 0;
++}
++
++static void hello_exit(void)
++{
++	pr_info("Goodbye %s. Ths modules lived %lld seconds\n", who, ktime_get_seconds() - init_time);
++}
++
++module_init(hello_init);
++module_exit(hello_exit);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Underview");
+-- 
+2.34.1
+
