@@ -20,6 +20,7 @@ Latest toolchain can be found at [linaro.org](https://releases.linaro.org/compon
 ```sh
 $ tar xvf ~/Downloads/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf.tar.xz -C $(pwd)
 $ mv gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf gcc-arm
+$ cp -rav gcc-arm/include/* gcc-arm/lib/gcc/arm-linux-gnueabihf/7.5.0/plugin/include/
 ```
 
 **Enter Dev Environment**
