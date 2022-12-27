@@ -147,6 +147,7 @@ $ make omap2plus_defconfig
 # CONFIG_NOP_USB_XCEIV=y
 # CONFIG_AM335X_PHY_USB=y
 # CONFIG_USB_ETH=y
+# CONFIG_ROOT_NFS=y
 # CONFIG_KERNEL_LZO=y
 $ make -j$(($(nproc)/2))
 $ ls arch/${ARCH}/boot
@@ -155,4 +156,18 @@ $ ls arch/${ARCH}/boot/dts/*.dtb
 # Copy over required files
 $ cp -a arch/${ARCH}/boot/zImage $HOME/linux-kernel-labs/tftp-server-files
 $ cp -a arch/${ARCH}/boot/dts/am335x-boneblack*.dtb $HOME/linux-kernel-labs/tftp-server-files
+```
+
+**Install kernel modules**
+```sh
+$ sudo INSTALL_MOD_PATH="${CDIR}/modules/nfsroot" make modules_install
+$ sudo chown -Rv $USER:$USER ${CDIR}/modules/nfsroot/lib/modules
+
+# From embedded compute
+$ modinfo hello_version
+$ modprobe hello_version who="TRY ME NOW"
+# Or
+$ insmod /lib/modules/$(uname -r)/kernel/drivers/misc/hello_version.ko who="TRY ME NOW"
+$ lsmod || cat < /proc/modules
+$ rmmod hello_version
 ```
