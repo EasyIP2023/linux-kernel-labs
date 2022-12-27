@@ -158,7 +158,7 @@ $ cp -a arch/${ARCH}/boot/zImage $HOME/linux-kernel-labs/tftp-server-files
 $ cp -a arch/${ARCH}/boot/dts/am335x-boneblack*.dtb $HOME/linux-kernel-labs/tftp-server-files
 ```
 
-**Install kernel modules**
+**Kernel Modules**
 ```sh
 $ sudo INSTALL_MOD_PATH="${CDIR}/modules/nfsroot" make modules_install
 $ sudo chown -Rv $USER:$USER ${CDIR}/modules/nfsroot/lib/modules
@@ -170,4 +170,9 @@ $ modprobe hello_version who="TRY ME NOW"
 $ insmod /lib/modules/$(uname -r)/kernel/drivers/misc/hello_version.ko who="TRY ME NOW"
 $ lsmod || cat < /proc/modules
 $ rmmod hello_version
+
+# Way to find parameters for a kernel module
+$ ls /sys/module/hello_version/parameters/
+# Can change parameter if module has write permissions
+$ echo 0 > /sys/module/usb_storage/parameters/delay_use
 ```
