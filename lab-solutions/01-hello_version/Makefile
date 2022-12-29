@@ -1,5 +1,7 @@
+MODULE_NAME = hello_version
+
 ifneq ($(KERNELRELEASE),)
-obj-m := hello_version.o
+obj-m := $(MODULE_NAME).o
 else
 KDIR := $(PWD)/../../linux
 endif
@@ -12,4 +14,6 @@ clean:
 	$(RM) $(PWD)/*.order
 	$(RM) $(PWD)/*.symvers
 	$(RM) $(PWD)/*.mod*
-
+	$(RM) $(PWD)/.mod*
+	$(RM) $(PWD)/.Mod*
+	$(RM) $(PWD)/.$(MODULE_NAME)*
