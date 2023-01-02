@@ -41,8 +41,8 @@ $ make install
 ```
 
 Populating rootfs:
-Busybox init will first look for `/etc/init.d/rcS` script, if it can’t find that then
-it will look for `/etc/inittab`. Inittab file will mount the virtual filesystem using
+Busybox upon init will first look for `/etc/init.d/rcS` script, if it can’t find that then
+it will look for `/etc/inittab`. Inittab file will mount the virtual filesystem's using
 fstab. Also, it will have the command for getting login prompt and shell.
 ```
 $ cd ${CDIR}/modules/nfsroot
@@ -77,13 +77,13 @@ $ cp -a ${CDIR}/gcc-arm/arm-linux-gnueabihf/lib/* ${CDIR}/modules/nfsroot/lib/
 $ cp -a ${CDIR}/gcc-arm/arm-linux-gnueabihf/lib/* ${CDIR}/modules/nfsroot/usr/lib/
 ```
 
-Installing server to watch
+**Installing NFS Server**
 ```
 $ sudo apt install nfs-kernel-server
 $ sudo echo "$HOME/linux-kernel-labs/modules/nfsroot 192.168.0.100(rw,no_root_squash,no_subtree_check)" >> /etc/exports
 ```
 
-Restarting NFS server
+**Restarting NFS server**
 ```sh
 $ sudo exportfs -r
 $ sudo /etc/init.d/nfs-kernel-server restart
@@ -136,7 +136,7 @@ $ git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux
 $ cd linux
 $ git remote add stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable
 $ git fetch stable
-# Choose stable branch to develop off of
+# Choose stable branch to develop from
 
 $ make omap2plus_defconfig
 # Add kernel config symbols
