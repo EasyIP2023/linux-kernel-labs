@@ -41,10 +41,12 @@ $ make install
 ```
 
 Populating rootfs:
+
 Busybox upon init will first look for `/etc/init.d/rcS` script, if it can’t find that then
 it will look for `/etc/inittab`. Inittab file will mount the virtual filesystem's using
 fstab. Also, it will have the command for getting login prompt and shell.
-```
+
+```sh
 $ cd ${CDIR}/modules/nfsroot
 $ mkdir -p dev lib usr/lib proc sys root etc
 $ sudo mknod dev/console c 5 1
@@ -75,6 +77,16 @@ root::0:0:root:/root:/bin/sh
 $ cd $CDIR
 $ cp -a ${CDIR}/gcc-arm/arm-linux-gnueabihf/lib/* ${CDIR}/modules/nfsroot/lib/
 $ cp -a ${CDIR}/gcc-arm/arm-linux-gnueabihf/lib/* ${CDIR}/modules/nfsroot/usr/lib/
+```
+
+```sh
+$ git clone https://git.kernel.org/pub/scm/utils/dtc/dtc.git
+$ cd dtc
+$ meson setup --prefix="${CDIR}/modules/nfsroot" \
+              --cross-file="${CDIR}/arm-linux-gnueabihf-meson-cross-file.txt" \
+              build
+$ ninja -C build
+$ ninja -C build install
 ```
 
 **Installing NFS Server**
