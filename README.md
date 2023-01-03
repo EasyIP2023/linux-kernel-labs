@@ -48,7 +48,7 @@ fstab. Also, it will have the command for getting login prompt and shell.
 
 ```sh
 $ cd ${CDIR}/modules/nfsroot
-$ mkdir -p dev lib usr/lib proc sys root etc
+$ mkdir -p dev lib usr/lib proc sys root etc tmp
 $ sudo mknod dev/console c 5 1
 $ sudo mknod dev/null c 1 3
 $ sudo mknod dev/zero c 1 5
@@ -64,6 +64,7 @@ null::restart:/sbin/reboot
 $ cat >> etc/fstab
 proc  /proc proc  defaults  0 0
 sysfs /sys  sysfs defaults  0 0
+tmpfs /tmp  tmpfs defaults,nodev,nosuid,size=1G 0  0
 [CTRL-D]
 
 $ cat >> etc/hostname
