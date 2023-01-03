@@ -1,0 +1,35 @@
+MODULE_NAME = nunchuk
+DTB_NAME = am335x-customboneblack
+
+# TODO: Compile device try using out-of-tree kernel Makefile
+# DTC_FLAGS += -i$(PWD)/../../linux/arch/arm/boot/dts
+
+ifneq ($(KERNELRELEASE),)
+obj-m := $(MODULE_NAME).o
+#dtb-$(CONFIG_SOC_AM33XX) += \
+#	$(DTB_NAME).dtb
+else
+KDIR := $(PWD)/../../linux
+endif
+
+# Bootlin Explanation
+# The module Makefile is initially interpreted with KERNELRELEASE undefined, so
+# it calls the kernel Makefile, passing the module directory in the M variable
+# The kernel Makefile knows how to compile a module, and thanks to the M
+# variable, knows where the Makefile for our module is. This module Makefile is
+# then interpreted with KERNELRELEASE defined, so the kernel sees the obj-m
+# definition.
+
+all:
+	$(MAKE) -C $(KDIR) M=$$PWD
+
+clean:
+	$(RM) $(PWD)/*.o
+	$(RM) $(PWD)/*.ko
+	$(RM) $(PWD)/*.order
+	$(RM) $(PWD)/*.symvers
+	$(RM) $(PWD)/*.mod*
+	$(RM) $(PWD)/.mod*
+	$(RM) $(PWD)/.Mod*
+	$(RM) $(PWD)/.$(MODULE_NAME)*
+	$(RM) $(PWD)/.$(DTB_NAME)*

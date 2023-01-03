@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/dts-v1/;
+
+#include "am335x-boneblack.dts"
+
+&i2c1 {
+ 	status = "okay";
+	clock-frequency = <100000>;
+
+	nunchuk: joystick@52 {
+		compatible = "nintendo,nunchuk";
+		reg = <0x52>;
+	};
+};
