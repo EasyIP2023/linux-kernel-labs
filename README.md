@@ -75,8 +75,8 @@ root::0:0:root:/root:/bin/sh
 [CTRL-D]
 
 $ cd $CDIR
-$ cp -a ${CDIR}/gcc-arm/arm-linux-gnueabihf/lib/* ${CDIR}/modules/nfsroot/lib/
-$ cp -a ${CDIR}/gcc-arm/arm-linux-gnueabihf/lib/* ${CDIR}/modules/nfsroot/usr/lib/
+$ cp -ra ${CDIR}/gcc-arm/arm-linux-gnueabihf/libc/lib/* ${CDIR}/modules/nfsroot/lib
+$ cp -a ${CDIR}/gcc-arm/arm-linux-gnueabihf/libc/lib/* ${CDIR}/modules/nfsroot/usr/lib/
 ```
 
 ```sh
