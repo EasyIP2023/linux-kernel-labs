@@ -52,7 +52,7 @@ $ mkdir -p dev lib usr/lib proc sys root etc tmp
 $ sudo mknod dev/console c 5 1
 $ sudo mknod dev/null c 1 3
 $ sudo mknod dev/zero c 1 5
-$ sudo chown -v vince:vince dev/*
+$ sudo chown -v $USER:$USER dev/*
 
 $ cat >> etc/inittab
 null::sysinit:/bin/mount -a
@@ -68,7 +68,7 @@ tmpfs /tmp  tmpfs defaults,nodev,nosuid,size=1G 0  0
 [CTRL-D]
 
 $ cat >> etc/hostname
-great_grand_embedded
+great_embedded
 [CTRL-D]
 
 $ cat >> etc/passwd
@@ -77,7 +77,7 @@ root::0:0:root:/root:/bin/sh
 
 $ cd $CDIR
 $ cp -ra ${CDIR}/gcc-arm/arm-linux-gnueabihf/libc/lib/* ${CDIR}/modules/nfsroot/lib
-$ cp -a ${CDIR}/gcc-arm/arm-linux-gnueabihf/libc/lib/* ${CDIR}/modules/nfsroot/usr/lib/
+$ cp -ra ${CDIR}/gcc-arm/arm-linux-gnueabihf/libc/lib/* ${CDIR}/modules/nfsroot/usr/lib/
 ```
 
 ```sh
