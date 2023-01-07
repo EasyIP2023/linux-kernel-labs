@@ -4,6 +4,14 @@
 #include <linux/module.h>
 #include <linux/i2c.h>
 
+/*
+ * probe function responsible for:
+ *
+ * Initializing the device
+ * Register the device to the proper kernel framework
+ * Mapping I/O memory
+ * Registering the interrupt handlers
+ */
 static int nunchuk_probe(struct i2c_client *client)
 {
 	pr_info("Called %s\n", __func__);
