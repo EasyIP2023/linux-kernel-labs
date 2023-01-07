@@ -168,7 +168,7 @@ $ ls arch/${ARCH}/boot/dts/*.dtb
 
 # Copy over required files
 $ cp -a arch/${ARCH}/boot/zImage $HOME/linux-kernel-labs/tftp-server-files
-$ cp -a arch/${ARCH}/boot/dts/am335x-boneblack*.dtb $HOME/linux-kernel-labs/tftp-server-files
+$ cp -a arch/${ARCH}/boot/dts/*am335x-*boneblack*.dtb $HOME/linux-kernel-labs/tftp-server-files
 ```
 
 **Kernel Modules**
