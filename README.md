@@ -1,6 +1,7 @@
 # Bootlin Linux Kernel Practice
 
 **Useful Links**
+- [Bootlin Training Material](https://github.com/bootlin/training-materials)
 - [Updating kernel and bootloader on BeagleBone Black Wireless](https://krinkinmu.github.io/2020/07/05/beaglebone-software-update.html)
 - [Creating Rootfs for BeagleBone Black](https://embedjournal.com/custom-rfs-beaglebone-black/)
 
