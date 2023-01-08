@@ -53,6 +53,12 @@ Continue? [y/N] y
 70: -- -- -- -- -- -- -- --
 ```
 
+**Check if Z or C buttons pressed**
+```bash
+# From embedded compute
+$ insmod nunchuk/nunchuk.ko ; rmmod nunchuk
+```
+
 **Check Driver Syntax Follows Standards**
 ```sh
 $ ../../linux/scripts/checkpatch.pl --fix nunchuk.c
