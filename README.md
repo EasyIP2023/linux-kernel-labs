@@ -50,6 +50,11 @@ fstab. Also, it will have the command for getting login prompt and shell.
 ```sh
 $ cd ${CDIR}/modules/nfsroot
 $ mkdir -p dev lib usr/lib proc sys root etc tmp
+# mknod /dev/<device file name> type major minor
+# types:
+# b      create a block (buffered) special file
+# c, u   create a character (unbuffered) special file
+# p      create a FIFO
 $ sudo mknod dev/console c 5 1
 $ sudo mknod dev/null c 1 3
 $ sudo mknod dev/zero c 1 5
