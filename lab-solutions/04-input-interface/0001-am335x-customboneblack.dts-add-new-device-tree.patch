@@ -1,0 +1,68 @@
+From d794d1f0c6bd1673f6672f2a185ba9a1ea6a60e0 Mon Sep 17 00:00:00 2001
+From: Vincent Davis Jr <vince@underview.tech>
+Date: Sat, 7 Jan 2023 14:35:34 -0600
+Subject: [PATCH] am335x-customboneblack.dts: add new device tree
+
+Add device tree for Wii Nunchuk and configure
+pinmux information on the am3358 ARM Cortex A8
+processor so that pins 17 and 18 are utilized
+as i2c pins.
+
+SPI0_D1 to I2C1_SDA and SPI0_CS0 to I2C1_SCL
+
+Signed-off-by: Vincent Davis Jr <vince@underview.tech>
+---
+ arch/arm/boot/dts/Makefile                   |  3 ++-
+ arch/arm/boot/dts/am335x-customboneblack.dts | 26 ++++++++++++++++++++
+ 2 files changed, 28 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm/boot/dts/am335x-customboneblack.dts
+
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index 6aa7dc4db2fc..4b5d13d2003e 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -959,7 +959,8 @@ dtb-$(CONFIG_SOC_AM33XX) += \
+ 	am335x-sbc-t335.dtb \
+ 	am335x-sl50.dtb \
+ 	am335x-wega-rdk.dtb \
+-	am335x-osd3358-sm-red.dtb
++	am335x-osd3358-sm-red.dtb \
++	am335x-customboneblack.dtb
+ dtb-$(CONFIG_ARCH_OMAP4) += \
+ 	omap4-droid-bionic-xt875.dtb \
+ 	omap4-droid4-xt894.dtb \
+diff --git a/arch/arm/boot/dts/am335x-customboneblack.dts b/arch/arm/boot/dts/am335x-customboneblack.dts
+new file mode 100644
+index 000000000000..da012d85de64
+--- /dev/null
++++ b/arch/arm/boot/dts/am335x-customboneblack.dts
+@@ -0,0 +1,26 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/dts-v1/;
++
++#include "am335x-boneblack.dts"
++
++&am33xx_pinmux {
++	i2c1_pins: pinmux_i2c1_pins {
++		pinctrl-single,pins = <
++			AM33XX_PADCONF(AM335X_PIN_SPI0_D1, PIN_INPUT_PULLUP, MUX_MODE2) /* spi0_d1 -> i2c1_sda */
++			AM33XX_PADCONF(AM335X_PIN_SPI0_CS0, PIN_INPUT_PULLUP, MUX_MODE2) /* spi0_cs0 -> i2c1_scl */
++		>;
++	};
++};
++
++&i2c1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&i2c1_pins>;
++
++	status = "okay";
++	clock-frequency = <100000>;
++
++	nunchuk: joystick@52 {
++		compatible = "nintendo,nunchuk";
++		reg = <0x52>;
++	};
++};
+-- 
+2.34.1
+
