@@ -96,6 +96,12 @@ $ ninja -C build
 $ ninja -C build install
 ```
 
+```sh
+$ git clone https://gitlab.freedesktop.org/libevdev/evtest.git
+$ cd evtest
+$ ./autogen.sh --prefix="${CDIR}/modules/nfsroot" --host x86_64
+```
+
 **Installing NFS Server**
 ```
 $ sudo apt install nfs-kernel-server
