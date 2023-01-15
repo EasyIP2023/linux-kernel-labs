@@ -1,6 +1,7 @@
 #!/bin/bash
 
 CDIR="$(pwd)"
+export PKG_CONFIG_PATH="${CDIR}/modules/nfsroot/lib/pkgconfig:${PKG_CONFIG_PATH}"
 export PATH="${CDIR}/gcc-arm/bin:$PATH"
 export ARCH="arm"
 COMPILER_PREFIX="arm-linux-gnueabihf"
