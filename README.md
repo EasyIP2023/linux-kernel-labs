@@ -145,7 +145,7 @@ $ . env.sh
 ```sh
 $ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
 $ git clone https://github.com/sf-refugees/ninvaders.git
-$ git apply "${CDIR}/patches/0001-cross-compile-ncurses.patch"
+$ git apply "${CDIR}/patches/0001-cross-compile-ninvaders.patch"
 $ cd ninvaders
 $ cmake -G Ninja \
         -S "$(pwd)" \
