@@ -22,6 +22,11 @@ Latest toolchain can be found at [linaro.org](https://releases.linaro.org/compon
 $ tar xvf ~/Downloads/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf.tar.xz -C $(pwd)
 $ mv gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf gcc-arm
 $ cp -rav gcc-arm/include/* gcc-arm/lib/gcc/arm-linux-gnueabihf/7.5.0/plugin/include/
+# ncurses make install uses strip command.
+# Simple fix to ensure we are using arm-linux-gnueabihf- implementation
+# and not the system implementation
+$ cd gcc-arm/bin
+$ ln -sfv arm-linux-gnueabihf-strip strip
 ```
 
 **Enter Dev Environment**
@@ -113,27 +118,41 @@ $ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
 $ pkgname="ncurses" ; pkgver=6.4
 $ wget https://invisible-mirror.net/archives/${pkgname}/${pkgname}-${pkgver}.tar.gz{,.asc}
 $ tar xfv "${pkgname}-${pkgver}.tar.gz" ; cd "${pkgname}-${pkgver}"
+$ mkdir -p build ; cd build
 # For odd reasons configure script errors out if external variables set
-$ unset CC CPP CXX AR AS RANLIB LD STRIP
-$ ./configure --prefix="${CDIR}/modules/nfsroot" \
-              --target="${COMPILER_PREFIX}" \
-              --host="${COMPILER_PREFIX}" \
-              --with-shared \
-              --with-normal \
-              --without-debug \
-              --without-ada \
-              --enable-widec \
-              --with-cxx-binding \
-              --with-cxx-shared \
-              --enable-ext-colors \
-              --enable-ext-mouse \
-              --enable-overwrite \
-              --with-build-cc="gcc -D_GNU_SOURCE"
+$ unset CC CPP CXX
+$ ../configure --prefix="${CDIR}/modules/nfsroot" \
+               --target="${COMPILER_PREFIX}" \
+               --host="${COMPILER_PREFIX}" \
+               --with-shared \
+               --with-normal \
+               --without-debug \
+               --without-ada \
+               --with-cxx-binding \
+               --with-cxx-shared \
+               --enable-ext-colors \
+               --enable-ext-mouse \
+               --enable-overwrite \
+               --enable-pc-files \
+               --with-build-cc="gcc -D_GNU_SOURCE"
 $ make -j$(nproc)
 $ make install
 $ unset pkgname pkgver
 # Remember to re-execute environment script
 $ . env.sh
+```
+
+```sh
+$ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
+$ git clone https://github.com/sf-refugees/ninvaders.git
+$ git apply "${CDIR}/patches/0001-cross-compile-ncurses.patch"
+$ cd ninvaders
+$ cmake -G Ninja \
+        -S "$(pwd)" \
+        -B "$(pwd)/build" \
+        -DCMAKE_INSTALL_PREFIX="${CDIR}/modules/nfsroot"
+$ cmake --build "$(pwd)/build" -j$(nproc)
+$ cmake --build "$(pwd)/build" --target install
 ```
 
 **Installing NFS Server**

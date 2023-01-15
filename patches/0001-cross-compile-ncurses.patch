@@ -1,0 +1,27 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6c19401..6db8166 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -5,9 +5,9 @@ set(CMAKE_C_STANDARD 11)
+ 
+ include(GNUInstallDirs)
+ 
+-set(CURSES_NEED_NCURSES TRUE)
+-find_package(Curses REQUIRED)
+-include_directories(${CURSES_INCLUDE_DIRS})
++include(FindPkgConfig)
++pkg_search_module(NCURSES REQUIRED ncurses)
++include_directories(${NCURSES_INCLUDE_DIRS})
+ 
+ set(SOURCES
+ 	aliens.c
+@@ -20,7 +20,8 @@ set(SOURCES
+ )
+ 
+ add_executable(ninvaders ${SOURCES})
+-target_link_libraries(ninvaders ${CURSES_LIBRARIES})
++target_link_directories(ninvaders PUBLIC ${NCURSES_LIBRARY_DIRS})
++target_link_libraries(ninvaders ${NCURSES_LIBRARIES})
+ 
+ install(TARGETS ninvaders
+ 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
