@@ -58,3 +58,4 @@ tftp-server-files
 gcc-arm
 dtc
 evtest
+tmp

@@ -31,8 +31,9 @@ $ . ./env.sh
 
 **Creating NFS root filesystem**
 ```sh
-$ git clone git://git.busybox.net/busybox.git
-$ cd busybox/
+$ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
+# Checkout to stable branch if so choose
+$ git clone git://git.busybox.net/busybox.git ; cd busybox
 $ make defconfig
 # CONFIG_STATIC=y (Settings > Build static binary (no shared libs))
 # CONFIG_PREFIX="$HOME/linux-kernel-labs/modules/nfsroot" (Settings > Destination path for 'make install')
@@ -87,6 +88,8 @@ $ cp -ra ${CDIR}/gcc-arm/arm-linux-gnueabihf/libc/lib/* ${CDIR}/modules/nfsroot/
 ```
 
 ```sh
+$ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
+# Checkout to stable branch if so choose
 $ git clone https://git.kernel.org/pub/scm/utils/dtc/dtc.git
 $ cd dtc
 $ meson setup --prefix="${CDIR}/modules/nfsroot" \
@@ -97,9 +100,40 @@ $ ninja -C build install
 ```
 
 ```sh
-$ git clone https://gitlab.freedesktop.org/libevdev/evtest.git
-$ cd evtest
-$ ./autogen.sh --prefix="${CDIR}/modules/nfsroot" --host x86_64
+$ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
+# Checkout to stable branch if so choose
+$ git clone https://gitlab.freedesktop.org/libevdev/evtest.git ; cd evtest
+$ ./autogen.sh --prefix="${CDIR}/modules/nfsroot" --host="${COMPILER_PREFIX}"
+$ make -j$(nproc)
+$ make install
+```
+
+```sh
+$ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
+$ pkgname="ncurses" ; pkgver=6.4
+$ wget https://invisible-mirror.net/archives/${pkgname}/${pkgname}-${pkgver}.tar.gz{,.asc}
+$ tar xfv "${pkgname}-${pkgver}.tar.gz" ; cd "${pkgname}-${pkgver}"
+# For odd reasons configure script errors out if external variables set
+$ unset CC CPP CXX AR AS RANLIB LD STRIP
+$ ./configure --prefix="${CDIR}/modules/nfsroot" \
+              --target="${COMPILER_PREFIX}" \
+              --host="${COMPILER_PREFIX}" \
+              --with-shared \
+              --with-normal \
+              --without-debug \
+              --without-ada \
+              --enable-widec \
+              --with-cxx-binding \
+              --with-cxx-shared \
+              --enable-ext-colors \
+              --enable-ext-mouse \
+              --enable-overwrite \
+              --with-build-cc="gcc -D_GNU_SOURCE"
+$ make -j$(nproc)
+$ make install
+$ unset pkgname pkgver
+# Remember to re-execute environment script
+$ . env.sh
 ```
 
 **Installing NFS Server**
