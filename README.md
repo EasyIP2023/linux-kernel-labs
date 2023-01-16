@@ -61,6 +61,10 @@ $ mkdir -p dev lib usr/lib proc sys root etc tmp
 # b      create a block (buffered) special file
 # c, u   create a character (unbuffered) special file
 # p      create a FIFO
+# major minor device numbers associated with character device can be found here
+# https://www.kernel.org/doc/html/latest/admin-guide/devices.html
+# major: typically indicates the family of devices (Bootlin Slides)
+# minor: allows drivers to distinguish the various devices they manage (Bootlin Slides)
 $ sudo mknod dev/console c 5 1
 $ sudo mknod dev/null c 1 3
 $ sudo mknod dev/zero c 1 5
