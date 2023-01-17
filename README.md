@@ -231,6 +231,7 @@ $ make omap2plus_defconfig
 # CONFIG_USB_ETH=y
 # CONFIG_ROOT_NFS=y
 # CONFIG_KERNEL_LZO=y
+# CONFIG_INPUT_JOYDEV=y
 $ make -j$(($(nproc)/2))
 $ ls arch/${ARCH}/boot
 $ ls arch/${ARCH}/boot/dts/*.dtb

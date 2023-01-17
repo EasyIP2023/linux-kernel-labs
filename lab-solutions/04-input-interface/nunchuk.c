@@ -36,7 +36,7 @@ static int nunchuk_read_registers(struct i2c_client *client, u8 *recv_buf, int r
 static void nunchuk_poll(struct input_dev *input) {
 	u8 recv_buf[6];
 	int recv_bufsz = sizeof(recv_buf) / sizeof(u8);
-	int zpressed = 0, cpressed = 0;
+	int zpressed = 0, cpressed = 0, xaxis = 0, yaxis = 0;
 
 	/* Retrieve address that points to i2c device */
 	struct i2c_client *client = (struct i2c_client *) input_get_drvdata(input);
@@ -45,12 +45,16 @@ static void nunchuk_poll(struct input_dev *input) {
 	if (nunchuk_read_registers(client, recv_buf, recv_bufsz) < 0)
 		return;
 
+	xaxis = recv_buf[0]; // X-axis data of the joystick
+	yaxis = recv_buf[1]; // Y-axis data of the joystick
 	zpressed = (recv_buf[5] & BIT(0)) ? 0 : 1;
 	cpressed = (recv_buf[5] & BIT(1)) ? 0 : 1;
 
 	/* Send events to the INPUT subsystem */
 	input_report_key(input, BTN_Z, zpressed);
 	input_report_key(input, BTN_C, cpressed);
+	input_report_abs(input, ABS_X, xaxis);
+	input_report_abs(input, ABS_Y, yaxis);
 
 	input_sync(input);
 }
@@ -107,7 +111,7 @@ static int nunchuk_probe(struct i2c_client *client)
 	input = devm_input_allocate_device(&client->dev);
 	if (!input) {
 		dev_err(&client->dev, "devm_input_allocate_device: failed allocate struct input_dev instance\n");
-		return -1;
+		return -ENOMEM;
 	}
 
 	/*
@@ -125,6 +129,25 @@ static int nunchuk_probe(struct i2c_client *client)
 	set_bit(EV_KEY, input->evbit);
 	set_bit(BTN_C, input->keybit);
 	set_bit(BTN_Z, input->keybit);
+
+	set_bit(EV_ABS, input->evbit);
+	set_bit(ABS_X, input->absbit);
+	set_bit(ABS_Y, input->absbit);
+	input_set_abs_params(input, ABS_X, 30, 220, 4, 8);
+	input_set_abs_params(input, ABS_Y, 40, 200, 4, 8);
+
+	/* Classic buttons: To make the joystick usable */
+	set_bit(BTN_TL, input->keybit);
+	set_bit(BTN_SELECT, input->keybit);
+	set_bit(BTN_MODE, input->keybit);
+	set_bit(BTN_START, input->keybit);
+	set_bit(BTN_TR, input->keybit);
+	set_bit(BTN_TL2, input->keybit);
+	set_bit(BTN_B, input->keybit);
+	set_bit(BTN_Y, input->keybit);
+	set_bit(BTN_A, input->keybit);
+	set_bit(BTN_X, input->keybit);
+	set_bit(BTN_TR2, input->keybit);
 
 	/* Register and configure polling function */
 	ret = input_setup_polling(input, nunchuk_poll);
