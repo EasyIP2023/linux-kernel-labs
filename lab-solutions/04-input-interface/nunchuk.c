@@ -45,6 +45,7 @@ static void nunchuk_poll(struct input_dev *input) {
 	if (nunchuk_read_registers(client, recv_buf, recv_bufsz) < 0)
 		return;
 
+	// Can find in nunchuk.pdf
 	xaxis = recv_buf[0]; // X-axis data of the joystick
 	yaxis = recv_buf[1]; // Y-axis data of the joystick
 	zpressed = (recv_buf[5] & BIT(0)) ? 0 : 1;
@@ -126,13 +127,24 @@ static int nunchuk_probe(struct i2c_client *client)
 	input->name = "Wii Nunchuk";
 	input->id.bustype = BUS_I2C;
 
-	set_bit(EV_KEY, input->evbit);
-	set_bit(BTN_C, input->keybit);
+	// EV_KEY: used for keys and buttons
+	set_bit(EV_KEY, input->evbit); // Sets the type of event the device can generate
+	set_bit(BTN_C, input->keybit); // Event Code
 	set_bit(BTN_Z, input->keybit);
 
-	set_bit(EV_ABS, input->evbit);
-	set_bit(ABS_X, input->absbit);
+	// EV_ABS: Absolute values supplied by the device
+	set_bit(EV_ABS, input->evbit); // Set the type of event the device can generate
+	set_bit(ABS_X, input->absbit); // Event Code
 	set_bit(ABS_Y, input->absbit);
+
+	/*
+	 * Populate fields in the input_dev struct for each absolute axis the device has
+	 *
+	 * input->absmin[ABS_X] = 30;
+	 * input->absmax[ABS_X] = 220;
+	 * input->absfuzz[ABS_X] = 4;
+	 * input->absflat[ABS_X] = 8;
+	 */
 	input_set_abs_params(input, ABS_X, 30, 220, 4, 8);
 	input_set_abs_params(input, ABS_Y, 40, 200, 4, 8);
 
