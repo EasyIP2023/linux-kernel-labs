@@ -1,5 +1,7 @@
 MODULE_NAME = hello_version
 
+# CFLAGS_$(MODULE_NAME).o += -I$(PWD)
+
 ifneq ($(KERNELRELEASE),)
 obj-m := $(MODULE_NAME).o
 else

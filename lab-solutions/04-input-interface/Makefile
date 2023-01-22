@@ -3,6 +3,7 @@ DTB_NAME = am335x-customboneblack
 
 # TODO: Compile device try using out-of-tree kernel Makefile
 # DTC_FLAGS += -i$(PWD)/../../linux/arch/arm/boot/dts
+# CFLAGS_$(MODULE_NAME).o += -I$(PWD)
 
 ifneq ($(KERNELRELEASE),)
 obj-m := $(MODULE_NAME).o
