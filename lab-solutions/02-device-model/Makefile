@@ -1,14 +1,14 @@
 MODULE_NAME = nunchuk
 DTB_NAME = am335x-customboneblack
+DTS_FNAME = $(DTB_NAME).dts
+DTS_TEMP_FNAME = $(DTB_NAME).tmp.dts
+DTB_FNAME = $(DTB_NAME).dtb
+DTC ?= dtc
 
-# TODO: Compile device try using out-of-tree kernel Makefile
-# DTC_FLAGS += -i$(PWD)/../../linux/arch/arm/boot/dts
 # CFLAGS_$(MODULE_NAME).o += -I$(PWD)
 
 ifneq ($(KERNELRELEASE),)
 obj-m := $(MODULE_NAME).o
-#dtb-$(CONFIG_SOC_AM33XX) += \
-#	$(DTB_NAME).dtb
 else
 KDIR := $(PWD)/../../linux
 endif
@@ -21,8 +21,15 @@ endif
 # then interpreted with KERNELRELEASE defined, so the kernel sees the obj-m
 # definition.
 
-all:
+all: dtb
 	$(MAKE) -C $(KDIR) M=$$PWD
+
+# https://linux-sunxi.org/Device_Tree#Compiling_the_Device_Tree
+# TODO: add DTC_FLAGS to command
+dtb:
+	$(CPP) -nostdinc -I include -undef -x assembler-with-cpp -I$(KDIR)/include $(PWD)/$(DTS_FNAME) > $(PWD)/$(DTS_TEMP_FNAME)
+	$(DTC) -O dtb -b 0 -o $(PWD)/$(DTB_FNAME) $(PWD)/$(DTS_TEMP_FNAME)
+	$(RM) $(PWD)/$(DTS_TEMP_FNAME)
 
 clean:
 	$(RM) $(PWD)/*.o
