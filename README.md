@@ -1,17 +1,18 @@
 # Bootlin Linux Kernel Practice
 
 **Useful Links**
+
 - [Bootlin Training Material](https://github.com/bootlin/training-materials)
 - [Updating kernel and bootloader on BeagleBone Black Wireless](https://krinkinmu.github.io/2020/07/05/beaglebone-software-update.html)
 - [Creating Rootfs for BeagleBone Black](https://embedjournal.com/custom-rfs-beaglebone-black/)
 
 **tftp server**
+
 ```sh
 $ sudo apt install tftpd-hpa
-# Update to TFTP_DIRECTORY variable
-# TFTP_DIRECTORY="/home/vince/linux-kernel-labs/tftp-server-files"
-$ mkdir -p $HOME/linux-kernel-labs/tftp-server-files
-$ sudo vim /etc/default/tftpd-hpa
+$ mkdir -p $(pwd)/tftp-server-files
+$ sudo sed -i "s@/srv/tftp@$(pwd)/tftp-server-files@g" \
+              /etc/default/tftpd-hpa
 $ sudo /etc/init.d/tftpd-hpa restart
 ```
 
