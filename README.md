@@ -16,26 +16,12 @@ $ sudo sed -i "s@/srv/tftp@$(pwd)/tftp-server-files@g" \
 $ sudo /etc/init.d/tftpd-hpa restart
 ```
 
-**Download + Extract Latest Cross Compiler Tools**
+**Cross Compiler tools may be found in docker container**
 
-Latest toolchain can be found at [linaro.org](https://releases.linaro.org/components/toolchain/binaries/)
-```sh
-$ tar xvf ~/Downloads/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf.tar.xz -C $(pwd)
-$ mv gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf gcc-arm
-$ cp -rav gcc-arm/include/* gcc-arm/lib/gcc/arm-linux-gnueabihf/7.5.0/plugin/include/
-# ncurses make install uses strip command.
-# Simple fix to ensure we are using arm-linux-gnueabihf- implementation
-# and not the system implementation
-$ cd gcc-arm/bin
-$ ln -sfv arm-linux-gnueabihf-strip strip
-```
-
-**Enter Dev Environment**
-```sh
-$ . ./env.sh
-```
+[Underview Kernel Dev (arm-gnueabihf)](https://github.com/under-view/docker-builds/blob/master/containers/kern-devel/arm-gnueabihf/Dockerfile)
 
 **Creating NFS root filesystem**
+
 ```sh
 $ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
 # Checkout to stable branch if so choose
