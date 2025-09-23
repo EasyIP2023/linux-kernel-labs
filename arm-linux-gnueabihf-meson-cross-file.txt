@@ -15,3 +15,6 @@ system = 'linux'
 cpu_family = 'arm'
 cpu = 'armv7hl'
 endian = 'little'
+
+[properties]
+needs_exe_wrapper = false
