@@ -82,8 +82,9 @@ it will look for `/etc/inittab`. Inittab file will mount the virtual filesystem'
 fstab. Also, it will have the command for getting login prompt and shell.
 
 ```sh
-$ cd ${CDIR}/modules/nfsroot
-$ mkdir -p dev lib usr/lib proc sys root etc tmp
+$ mkdir -pv modules/nfsroot/{dev,lib,usr/lib,proc,sys,root,etc,tmp}
+
+
 # mknod /dev/<device file name> type major minor
 # types:
 # b      create a block (buffered) special file
@@ -93,35 +94,36 @@ $ mkdir -p dev lib usr/lib proc sys root etc tmp
 # https://www.kernel.org/doc/html/latest/admin-guide/devices.html
 # major: typically indicates the family of devices (Bootlin Slides)
 # minor: allows drivers to distinguish the various devices they manage (Bootlin Slides)
-$ sudo mknod dev/console c 5 1
-$ sudo mknod dev/null c 1 3
-$ sudo mknod dev/zero c 1 5
-$ sudo chown -v $USER:$USER dev/*
+$ sudo mknod modules/nfsroot/dev/console c 5 1
+$ sudo mknod modules/nfsroot/dev/null c 1 3
+$ sudo mknod modules/nfsroot/dev/zero c 1 5
+$ sudo chown -v $USER:$USER modules/nfsroot/dev/*
 
-$ cat >> etc/inittab
+
+$ cat >> modules/nfsroot/etc/inittab << EOF
 null::sysinit:/bin/mount -a
 null::sysinit:/bin/hostname -F /etc/hostname
 null::respawn:/bin/cttyhack /bin/login root
 null::restart:/sbin/reboot
-[CTRL-D]
+EOF
 
-$ cat >> etc/fstab
+$ cat >> etc/fstab << EOF
 proc  /proc proc  defaults  0 0
 sysfs /sys  sysfs defaults  0 0
 tmpfs /tmp  tmpfs defaults,nodev,nosuid,size=1G 0  0
-[CTRL-D]
+EOF
 
-$ cat >> etc/hostname
+$ cat >> etc/hostname << EOF
 great_embedded
-[CTRL-D]
+EOF
 
-$ cat >> etc/passwd
+$ cat >> etc/passwd << EOF
 root::0:0:root:/root:/bin/sh
-[CTRL-D]
+EOF
 
-$ cd $CDIR
-$ cp -ra ${CDIR}/gcc-arm/arm-linux-gnueabihf/libc/lib/* ${CDIR}/modules/nfsroot/lib
-$ cp -ra ${CDIR}/gcc-arm/arm-linux-gnueabihf/libc/lib/* ${CDIR}/modules/nfsroot/usr/lib/
+
+$ cp -ra /usr/arm-linux-gnueabihf/lib/* modules/nfsroot/lib
+$ cp -ra /usr/arm-linux-gnueabihf/lib/* modules/nfsroot/usr/lib
 ```
 
 ```sh
