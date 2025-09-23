@@ -127,15 +127,15 @@ $ cp -ra /usr/arm-linux-gnueabihf/lib/* modules/nfsroot/usr/lib
 ```
 
 ```sh
-$ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
 # Checkout to stable branch if so choose
-$ git clone https://git.kernel.org/pub/scm/utils/dtc/dtc.git
-$ cd dtc
-$ meson setup --prefix="${CDIR}/modules/nfsroot" \
-              --cross-file="${CDIR}/arm-linux-gnueabihf-meson-cross-file.txt" \
+$ git clone https://git.kernel.org/pub/scm/utils/dtc/dtc.git ; cd dtc
+$ meson setup --prefix="$(pwd)/../modules/nfsroot" \
+              --cross-file="$(pwd)/../arm-linux-gnueabihf-meson-cross-file.txt" \
+              -Dtests="false" \
               build
 $ ninja -C build
 $ ninja -C build install
+$ cd .. ; rm -rf dtc
 ```
 
 ```sh
