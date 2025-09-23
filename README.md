@@ -22,16 +22,57 @@ $ sudo /etc/init.d/tftpd-hpa restart
 
 **Creating NFS root filesystem**
 
+Could also just generate one with yocto.
+
 ```sh
-$ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
+$ mkdir -p "$(pwd)/modules/nfsroot"
+
+
 # Checkout to stable branch if so choose
-$ git clone git://git.busybox.net/busybox.git ; cd busybox
+$ git clone -b 1_37_stable git://git.busybox.net/busybox.git ; cd busybox
+
+
 $ make defconfig
-# CONFIG_STATIC=y (Settings > Build static binary (no shared libs))
-# CONFIG_PREFIX="$HOME/linux-kernel-labs/modules/nfsroot" (Settings > Destination path for 'make install')
+$ make menuconfig
+# Networking Utilities -> tc (8.3 kb) | CONFIG_TC=n
+# Settings -> Build static binary (no shared libs) | CONFIG_STATIC=y
+# Settings -> (./_install) Destination path for 'make install' | CONFIG_PREFIX="../modules/nfsroot"
+
+
+# Taken from: https://github.com/mirror/busybox/issues/104#issuecomment-2993736445
+$ cat >> busybox-stable.patch << EOF
+From 12baa36320ecd27cb8bbdb3ff029259bcd571d7c Mon Sep 17 00:00:00 2001
+From: UlinKot <denis2005991@gmail.com>
+Date: Sat, 21 Jun 2025 21:22:16 +0300
+Subject: [PATCH] build fix: error occurring on non-i386, x86_64 systems when
+ using `sha1_process_block64`
+
+---
+ libbb/hash_md5_sha.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/libbb/hash_md5_sha.c b/libbb/hash_md5_sha.c
+index 57a8014..75a61c3 100644
+--- a/libbb/hash_md5_sha.c
++++ b/libbb/hash_md5_sha.c
+@@ -1313,7 +1313,9 @@ unsigned FAST_FUNC sha1_end(sha1_ctx_t *ctx, void *resbuf)
+ 	hash_size = 8;
+ 	if (ctx->process_block == sha1_process_block64
+ #if ENABLE_SHA1_HWACCEL
++# if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
+ 	 || ctx->process_block == sha1_process_block64_shaNI
++# endif
+ #endif
+ 	) {
+ 		hash_size = 5;
+-- 
+2.49.0
+EOF
+
+$ git apply busybox-stable.patch
 $ make -j $(nproc)
 $ make install
-# Should now see 4 folders (usr,bin,etc,sbin) and a file (linuxrc)
+$ cd .. ; rm -rf busybox
 ```
 
 Populating rootfs:
