@@ -139,12 +139,12 @@ $ cd .. ; rm -rf dtc
 ```
 
 ```sh
-$ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
 # Checkout to stable branch if so choose
 $ git clone https://gitlab.freedesktop.org/libevdev/evtest.git ; cd evtest
-$ ./autogen.sh --prefix="${CDIR}/modules/nfsroot" --host="${COMPILER_PREFIX}"
+$ ./autogen.sh --prefix="$(pwd)/../modules/nfsroot" --host="${CROSS_COMPILE}"
 $ make -j$(nproc)
 $ make install
+$ cd .. ; rm -rf evtest
 ```
 
 ```sh
