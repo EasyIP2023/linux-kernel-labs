@@ -148,16 +148,19 @@ $ cd .. ; rm -rf evtest
 ```
 
 ```sh
-$ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
-$ pkgname="ncurses" ; pkgver=6.4
+$ pkgname="ncurses" ; pkgver=6.5
 $ wget https://invisible-mirror.net/archives/${pkgname}/${pkgname}-${pkgver}.tar.gz{,.asc}
 $ tar xfv "${pkgname}-${pkgver}.tar.gz" ; cd "${pkgname}-${pkgver}"
 $ mkdir -p build ; cd build
+
+
 # For odd reasons configure script errors out if external variables set
 $ unset CC CPP CXX
-$ ../configure --prefix="${CDIR}/modules/nfsroot" \
-               --target="${COMPILER_PREFIX}" \
-               --host="${COMPILER_PREFIX}" \
+$ cross_compile="${CROSS_COMPILE%?}"
+$ ../configure --prefix="$(pwd)/../../modules/nfsroot" \
+               --with-pkg-config-libdir="$(pwd)/../../modules/nfsroot/lib/pkgconfig" \
+               --target="${cross_compile}" \
+               --host="${cross_compile}" \
                --with-shared \
                --with-normal \
                --without-debug \
@@ -168,12 +171,15 @@ $ ../configure --prefix="${CDIR}/modules/nfsroot" \
                --enable-ext-mouse \
                --enable-overwrite \
                --enable-pc-files \
+               --disable-stripping \
                --with-build-cc="gcc -D_GNU_SOURCE"
 $ make -j$(nproc)
 $ make install
-$ unset pkgname pkgver
-# Remember to re-execute environment script
-$ . env.sh
+
+
+$ cd ../../ ; rm -rf "${pkgname}-${pkgver}"*
+$ unset pkgname pkgver cross_compile
+$ source /etc/profile.d/compile-env.sh
 ```
 
 ```sh
