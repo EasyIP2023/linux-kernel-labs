@@ -107,23 +107,23 @@ null::respawn:/bin/cttyhack /bin/login root
 null::restart:/sbin/reboot
 EOF
 
-$ cat >> etc/fstab << EOF
+$ cat >> modules/nfsroot/etc/fstab << EOF
 proc  /proc proc  defaults  0 0
 sysfs /sys  sysfs defaults  0 0
 tmpfs /tmp  tmpfs defaults,nodev,nosuid,size=1G 0  0
 EOF
 
-$ cat >> etc/hostname << EOF
+$ cat >> modules/nfsroot/etc/hostname << EOF
 great_embedded
 EOF
 
-$ cat >> etc/passwd << EOF
+$ cat >> modules/nfsroot/etc/passwd << EOF
 root::0:0:root:/root:/bin/sh
 EOF
 
 
-$ cp -ra /usr/arm-linux-gnueabihf/lib/* modules/nfsroot/lib
-$ cp -ra /usr/arm-linux-gnueabihf/lib/* modules/nfsroot/usr/lib
+$ cp -raL /usr/arm-linux-gnueabihf/lib/* modules/nfsroot/lib
+$ cp -raL /usr/arm-linux-gnueabihf/lib/* modules/nfsroot/usr/lib
 ```
 
 ```sh
