@@ -178,21 +178,30 @@ $ make install
 
 
 $ cd ../../ ; rm -rf "${pkgname}-${pkgver}"*
+$ sed -i "s#${pkgname}-${pkgver}/build/../../##g" \
+         $(pwd)/modules/nfsroot/lib/pkgconfig/*.pc
 $ unset pkgname pkgver cross_compile
 $ source /etc/profile.d/compile-env.sh
+$ cd $(pwd)/modules/nfsroot/lib/pkgconfig
+$ ln -sf ncursesw.pc ncurses.pc
 ```
 
 ```sh
-$ mkdir -p "${CDIR}/tmp" ; cd "${CDIR}/tmp"
-$ git clone https://github.com/sf-refugees/ninvaders.git
-$ git apply "${CDIR}/patches/0001-cross-compile-ninvaders.patch"
-$ cd ninvaders
+$ git clone https://github.com/sf-refugees/ninvaders.git ; cd ninvaders
+$ git apply "$(pwd)/../patches/0001-cross-compile-ninvaders.patch"
+$ export PKG_CONFIG_PATH="$(pwd)/../modules/nfsroot/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+
 $ cmake -G Ninja \
         -S "$(pwd)" \
         -B "$(pwd)/build" \
-        -DCMAKE_INSTALL_PREFIX="${CDIR}/modules/nfsroot"
+        -DCMAKE_INSTALL_PREFIX="$(pwd)/../modules/nfsroot"
 $ cmake --build "$(pwd)/build" -j$(nproc)
 $ cmake --build "$(pwd)/build" --target install
+
+
+$ cd .. ; rm -rf ninvaders
+$ unset PKG_CONFIG_PATH
 ```
 
 **Installing NFS Server**
