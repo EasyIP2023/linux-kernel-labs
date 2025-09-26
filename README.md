@@ -205,12 +205,14 @@ $ unset PKG_CONFIG_PATH
 ```
 
 **Installing NFS Server**
+
 ```
 $ sudo apt install nfs-kernel-server
-$ sudo echo "$HOME/linux-kernel-labs/modules/nfsroot 192.168.0.100(rw,no_root_squash,no_subtree_check)" >> /etc/exports
+$ echo "<path to>/linux-kernel-labs/modules/nfsroot 192.168.0.100(rw,no_root_squash,no_subtree_check)" | sudo tee -a /etc/exports
 ```
 
 **Restarting NFS server**
+
 ```sh
 $ sudo exportfs -r
 $ sudo /etc/init.d/nfs-kernel-server restart
