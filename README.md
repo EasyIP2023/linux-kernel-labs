@@ -301,16 +301,19 @@ $ cp -av arch/${ARCH}/boot/dts/ti/omap/*am335x-*boneblack*.dtb $(pwd)/../tftp-se
 **Kernel Modules**
 
 ```sh
-$ sudo INSTALL_MOD_PATH="${CDIR}/modules/nfsroot" make modules_install
-$ sudo chown -Rv $USER:$USER ${CDIR}/modules/nfsroot/lib/modules
+$ make -C lab-solutions/01-hello_version
+$ INSTALL_MOD_PATH="$(pwd)/modules/nfsroot" make -C lab-solutions/01-hello_version modules_install
 
 # From embedded compute
 $ modinfo hello_version
 $ modprobe hello_version who="TRY ME NOW"
 # Or
-$ insmod /lib/modules/$(uname -r)/kernel/drivers/misc/hello_version.ko who="TRY ME NOW"
+$ insmod /lib/modules/$(uname -r)/updates/hello_version.ko who="TRY ME NOW"
+
+
 $ lsmod || cat < /proc/modules
 $ rmmod hello_version
+
 
 # Way to find parameters for a kernel module
 $ ls /sys/module/hello_version/parameters/
