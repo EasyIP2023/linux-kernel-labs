@@ -221,6 +221,7 @@ $ sudo /etc/init.d/nfs-kernel-server restart
 **Uboot Environment Variables**
 
 Reset environment variables
+
 ```
 env default -f -a
 saveenv
@@ -238,12 +239,22 @@ saveenv
 ```
 
 ```
+# From host machine
+$ modprob usbnet
+
+$ cat >> setup-up-eth.sh << EOF
+#!/bin/bash
+sudo ip addr add 192.168.0.1/24 broadcast 192.168.0.255 dev enxf8dc7a000001
+sudo ip link set dev enxf8dc7a000001 up
+sudo ip a
+EOF
+$ chmod +x setup-up-eth.sh
+
+
 # From u-boot run
 ping 192.168.0.1
-
-# From host machine
-# Use NetWork Manager CLI to configure interface for board
-$ nmcli con add type ethernet ifname enxf8dc7a000001 ip4 192.168.0.1/24
+# At the same time from host run
+$ ./setup-up-eth.sh
 
 # Check if everything works
 # From u-boot
@@ -251,6 +262,7 @@ tftp 0x81000000 zImage
 ```
 
 Set boot arguments
+
 ```
 setenv kern_load_addr 0x81000000
 setenv dtb_load_addr 0x82000000
@@ -260,6 +272,7 @@ saveenv
 ```
 
 **Building kernel**
+
 ```sh
 $ git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux
 $ cd linux
