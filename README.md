@@ -264,7 +264,9 @@ Set boot arguments
 ```
 setenv kern_load_addr 0x81000000
 setenv dtb_load_addr 0x82000000
-setenv bootargs console=ttyO0,115200n8 root=/dev/nfs rw ip=192.168.0.100:::::usb0 g_ether.dev_addr=f8:dc:7a:00:00:02 g_ether.host_addr=f8:dc:7a:00:00:01 nfsroot=192.168.0.1:/home/vince/linux-kernel-labs/modules/nfsroot,nfsvers=3,proto=tcp
+setenv nfs_rootfs <path to>/linux-kernel-labs/modules/nfsroot
+setenv usb_ethernet g_ether.dev_addr=${usbnet_devaddr} g_ether.host_addr=${usbnet_hostaddr}
+setenv bootargs console=ttyO0,115200n8 root=/dev/nfs rw ip=${ipaddr}:::::usb0 ${usb_ethernet} nfsroot=${serverip}:${nfs_rootfs},nfsvers=3,proto=tcp
 setenv bootcmd 'tftp ${kern_load_addr} zImage; tftp ${dtb_load_addr} am335x-boneblack.dtb; bootz ${kern_load_addr} - ${dtb_load_addr}'
 saveenv
 ```
