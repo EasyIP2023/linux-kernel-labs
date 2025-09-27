@@ -292,16 +292,15 @@ $ make omap2plus_defconfig
 # CONFIG_ROOT_NFS=y
 # CONFIG_KERNEL_LZO=y
 # CONFIG_INPUT_JOYDEV=y
-$ make -j$(($(nproc)/2))
-$ ls arch/${ARCH}/boot
-$ ls arch/${ARCH}/boot/dts/*.dtb
+$ make -j$(nproc)
 
 # Copy over required files
-$ cp -a arch/${ARCH}/boot/zImage $HOME/linux-kernel-labs/tftp-server-files
-$ cp -a arch/${ARCH}/boot/dts/*am335x-*boneblack*.dtb $HOME/linux-kernel-labs/tftp-server-files
+$ cp -av arch/${ARCH}/boot/zImage $(pwd)/../tftp-server-files
+$ cp -av arch/${ARCH}/boot/dts/ti/omap/*am335x-*boneblack*.dtb $(pwd)/../tftp-server-files
 ```
 
 **Kernel Modules**
+
 ```sh
 $ sudo INSTALL_MOD_PATH="${CDIR}/modules/nfsroot" make modules_install
 $ sudo chown -Rv $USER:$USER ${CDIR}/modules/nfsroot/lib/modules
