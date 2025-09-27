@@ -240,25 +240,23 @@ saveenv
 
 ```
 # From host machine
-$ modprob usbnet
+$ sudo cat >> /etc/systemd/network/70-bb-usb-ether.network << EOF
+[Match]
+Name=enxf8dc7a000001
+MACAddress=f8:dc:7a:00:00:01
 
-$ cat >> setup-up-eth.sh << EOF
-#!/bin/bash
-sudo ip addr add 192.168.0.1/24 broadcast 192.168.0.255 dev enxf8dc7a000001
-sudo ip link set dev enxf8dc7a000001 up
-sudo ip a
+[Network]
+Address=192.168.0.1/24
+Gateway=192.168.0.1
 EOF
-$ chmod +x setup-up-eth.sh
+$ sudo systemctl restart systemd-networkd
+$ echo "check if net copy" > tftp-server-files/testing.txt
 
 
 # From u-boot run
-ping 192.168.0.1
-# At the same time from host run
-$ ./setup-up-eth.sh
-
+ping $serverip
 # Check if everything works
-# From u-boot
-tftp 0x81000000 zImage
+tftp 0x81000000 testing.txt
 ```
 
 Set boot arguments
