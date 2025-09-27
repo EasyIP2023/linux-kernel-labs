@@ -247,7 +247,6 @@ MACAddress=f8:dc:7a:00:00:01
 
 [Network]
 Address=192.168.0.1/24
-Gateway=192.168.0.1
 EOF
 $ sudo systemctl restart systemd-networkd
 $ echo "check if net copy" > tftp-server-files/testing.txt
