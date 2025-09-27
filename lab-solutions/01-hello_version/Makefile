@@ -17,5 +17,8 @@ endif
 all:
 	$(MAKE) -C $(KSRC) M=$$PWD
 
+modules_install:
+	$(MAKE) -C $(KSRC) M=$$PWD modules_install
+
 clean:
 	$(MAKE) -C $(KSRC) M=$$PWD clean
