@@ -1,11 +1,9 @@
 MODULE_NAME = hello_version
 
-# CFLAGS_$(MODULE_NAME).o += -I$(PWD)
-
 ifneq ($(KERNELRELEASE),)
-obj-m := $(MODULE_NAME).o
+	obj-m := $(MODULE_NAME).o
 else
-KDIR := $(PWD)/../../linux
+	KSRC ?= $(PWD)/linux
 endif
 
 # Bootlin Explanation
@@ -17,14 +15,7 @@ endif
 # definition.
 
 all:
-	$(MAKE) -C $(KDIR) M=$$PWD
+	$(MAKE) -C $(KSRC) M=$$PWD
 
 clean:
-	$(RM) $(PWD)/*.o
-	$(RM) $(PWD)/*.ko
-	$(RM) $(PWD)/*.order
-	$(RM) $(PWD)/*.symvers
-	$(RM) $(PWD)/*.mod*
-	$(RM) $(PWD)/.mod*
-	$(RM) $(PWD)/.Mod*
-	$(RM) $(PWD)/.$(MODULE_NAME)*
+	$(MAKE) -C $(KSRC) M=$$PWD clean
