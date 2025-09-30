@@ -6,13 +6,12 @@
 #include <linux/platform_device.h>
 
 static int serial_uart_probe(struct platform_device *device) {
-
-    return 0;
+	pr_info("In probe function.\n");
+	return 0;
 }
 
-static int serial_uart_remove(struct platform_device *device) {
-
-    return 0;
+static void serial_uart_remove(struct platform_device *device) {
+	pr_info("In remove function.\n");
 }
 
 static const struct of_device_id serial_uart_dt_match[] = {
