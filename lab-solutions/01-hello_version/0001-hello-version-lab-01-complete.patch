@@ -1,18 +1,18 @@
-From 18edec60d468fd80e3e758eb7a2bee5dfedfa62a Mon Sep 17 00:00:00 2001
+From e33f8168d55588f08cc0629c2bae4b5152925409 Mon Sep 17 00:00:00 2001
 From: Vincent Davis Jr <vince@underview.tech>
-Date: Mon, 26 Dec 2022 16:46:30 -0600
-Subject: [PATCH] hello-version-lab-01-complete
+Date: Tue, 7 Oct 2025 21:50:28 -0400
+Subject: [PATCH] hello version lab 01 complete
 
 Signed-off-by: Vincent Davis Jr <vince@underview.tech>
 ---
  drivers/misc/Kconfig         |  5 +++++
  drivers/misc/Makefile        |  1 +
- drivers/misc/hello_version.c | 28 ++++++++++++++++++++++++++++
- 3 files changed, 34 insertions(+)
+ drivers/misc/hello_version.c | 29 +++++++++++++++++++++++++++++
+ 3 files changed, 35 insertions(+)
  create mode 100644 drivers/misc/hello_version.c
 
 diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 358ad56f6524..25f39f970c7f 100644
+index b9ca56930003..9c5ecb879be7 100644
 --- a/drivers/misc/Kconfig
 +++ b/drivers/misc/Kconfig
 @@ -5,6 +5,11 @@
@@ -20,31 +20,28 @@ index 358ad56f6524..25f39f970c7f 100644
  menu "Misc devices"
  
 +config HELLO
-+	tristate "Hello module"
++	tristate "Hello Module"
 +	help
-+	  Greeting module
++	  Greetings fellow human.
 +
  config SENSORS_LIS3LV02D
  	tristate
  	depends on INPUT
 diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index ac9b3e757ba1..85ec377e65c7 100644
+index 917b9a7183aa..94c9721e4d5e 100644
 --- a/drivers/misc/Makefile
 +++ b/drivers/misc/Makefile
-@@ -3,6 +3,7 @@
- # Makefile for misc devices that really don't fit anywhere else.
- #
- 
-+obj-$(CONFIG_HELLO)		+= hello_version.o
- obj-$(CONFIG_IBM_ASM)		+= ibmasm/
- obj-$(CONFIG_IBMVMC)		+= ibmvmc.o
- obj-$(CONFIG_AD525X_DPOT)	+= ad525x_dpot.o
+@@ -75,3 +75,4 @@ lan966x-pci-objs		+= lan966x_pci.dtbo.o
+ obj-$(CONFIG_MCHP_LAN966X_PCI)	+= lan966x-pci.o
+ obj-y				+= keba/
+ obj-y				+= amd-sbi/
++obj-$(CONFIG_HELLO)             += hello_version.o
 diff --git a/drivers/misc/hello_version.c b/drivers/misc/hello_version.c
 new file mode 100644
-index 000000000000..76879783b5bb
+index 000000000000..59c1ec58f77f
 --- /dev/null
 +++ b/drivers/misc/hello_version.c
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,29 @@
 +// SPDX-License-Identifier: GPL-2.0
 +#include <linux/init.h>
 +#include <linux/module.h>
@@ -73,6 +70,7 @@ index 000000000000..76879783b5bb
 +module_exit(hello_exit);
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Underview");
++MODULE_DESCRIPTION("Hello world module");
 -- 
-2.34.1
+2.43.0
 
