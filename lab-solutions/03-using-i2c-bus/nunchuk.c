@@ -128,3 +128,4 @@ module_i2c_driver(nunchuk_driver);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Underview");
+MODULE_DESCRIPTION("Wii Nunchuck module");
