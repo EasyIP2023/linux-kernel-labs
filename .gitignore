@@ -45,6 +45,7 @@
 # Kernel Module Compile Results
 *.mod*
 *.cmd
+*.dwo
 .tmp_versions/
 modules.order
 Module.symvers
@@ -61,3 +62,4 @@ evtest
 tmp
 
 *.dtb*
+*.swp
