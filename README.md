@@ -291,6 +291,7 @@ $ make omap2plus_defconfig
 # CONFIG_ROOT_NFS=y
 # CONFIG_KERNEL_LZO=y
 # CONFIG_INPUT_JOYDEV=y
+# CONFIG_INPUT_EVDEV=y
 $ make -j$(nproc)
 
 # Copy over required files
