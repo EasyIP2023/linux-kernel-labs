@@ -4,13 +4,28 @@
 #include <linux/of.h>
 #include <linux/platform_device.h>
 
-static int serial_uart_probe(struct platform_device *device) {
-	pr_info("In probe function.\n");
+struct serial_uart {
+	void __iomem *regs;
+};
+
+static int serial_uart_probe(struct platform_device *pdev) {
+	struct serial_uart *serial;
+
+	serial = devm_kzalloc(&pdev->dev, sizeof(struct serial_uart), GFP_KERNEL);
+	if (!serial)
+		return -ENOMEM;
+
+	serial->regs = devm_platform_ioremap_resource(pdev, 0);
+	if (IS_ERR(serial->regs))
+		return PTR_ERR(serial->regs);
+
+	pr_info("End of probe\n");
+
 	return 0;
 }
 
-static void serial_uart_remove(struct platform_device *device) {
-	pr_info("In remove function.\n");
+static void serial_uart_remove(struct platform_device *pdev) {
+	pr_info("End of remove\n");
 }
 
 static const struct of_device_id serial_uart_dt_match[] = {
