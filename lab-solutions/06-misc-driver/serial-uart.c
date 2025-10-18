@@ -8,10 +8,13 @@
 #include <linux/of.h>
 #include <linux/io.h> /* readl()/writel() */
 #include <linux/fs.h>
+#include <linux/uaccess.h>
 #include <linux/miscdevice.h>
+#include <linux/delay.h>
 
 struct serial_uart {
 	void __iomem *regs;
+	char __user *buf;
 	struct miscdevice miscdev;
 };
 
@@ -23,21 +26,46 @@ static inline void write_reg (struct serial_uart *serial, unsigned int reg, u32 
 	writel(val, serial->regs + (reg*4));
 }
 
-static void write_to_serial (struct serial_uart *serial, unsigned char val) {
-	/* Poll the Line Status Register (LSR) */
-	while (!(read_reg(serial, UART_LSR) & UART_LSR_THRE)) {
-		cpu_relax();
-	}
-
-	write_reg(serial, UART_TX, val);
-}
-
 static ssize_t serial_read(struct file *file, char __user *data, size_t size, loff_t *offset) {
 	return -EINVAL;
 }
 
 static ssize_t serial_write(struct file *file, const char __user *data, size_t size, loff_t *offset) {
-	return -EINVAL;
+	int ret;
+	size_t s;
+	char buf;
+	unsigned int reg_val = 0;
+	struct serial_uart *serial;
+
+	serial = container_of(file->private_data, struct serial_uart, miscdev);
+
+	if (size >= PAGE_SIZE)
+		return -EINVAL;
+
+	/* Poll the Line Status Register (LSR) */
+	while (!reg_val) {
+		reg_val = (read_reg(serial, UART_LSR) & UART_LSR_THRE);
+		cpu_relax();
+	}
+
+	ret = copy_from_user(serial->buf, (char*) data, size);
+	if (ret) {
+		return -EFAULT;
+	}
+
+	for (s = 0; s < size; s++) {
+		usleep_range(50, 100);
+
+		buf = serial->buf[s];
+		write_reg(serial, UART_TX, (u32)buf);
+
+		if (buf == '\n') {
+			usleep_range(50, 100);
+			write_reg(serial, UART_TX, '\r');
+		}
+	}
+
+	return 0;
 }
 
 static int serial_uart_probe(struct platform_device *pdev) {
@@ -62,6 +90,10 @@ static int serial_uart_probe(struct platform_device *pdev) {
 	serial->regs = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(serial->regs))
 		return PTR_ERR(serial->regs);
+
+	serial->buf = (char *) get_zeroed_page(GFP_USER);
+	if (!(serial->buf))
+		return -ENOMEM;
 
 	pm_runtime_enable(&pdev->dev);
 	pm_runtime_get_sync(&pdev->dev);
@@ -89,8 +121,6 @@ static int serial_uart_probe(struct platform_device *pdev) {
 
 	/* Clear UART FIFOs */
 	write_reg(serial, UART_FCR, UART_FCR_CLEAR_RCVR | UART_FCR_CLEAR_XMIT);
-
-	write_to_serial(serial, 'B');
 
 	platform_set_drvdata(pdev, serial);
 
@@ -121,6 +151,7 @@ static void serial_uart_remove(struct platform_device *pdev) {
 
 	serial = platform_get_drvdata(pdev);
 
+	free_page((unsigned long)serial->buf);
 	pm_runtime_disable(&pdev->dev);
 	misc_deregister(&serial->miscdev);
 }
