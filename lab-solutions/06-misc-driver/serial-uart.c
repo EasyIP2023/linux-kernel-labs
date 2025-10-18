@@ -7,16 +7,19 @@
 #include <linux/pm_runtime.h> /* pm_*() */
 #include <linux/of.h>
 #include <linux/io.h> /* readl()/writel() */
+#include <linux/fs.h>
+#include <linux/miscdevice.h>
 
 struct serial_uart {
 	void __iomem *regs;
+	struct miscdevice miscdev;
 };
 
-static unsigned int read_reg (struct serial_uart *serial, unsigned int reg) {
+static inline unsigned int read_reg (struct serial_uart *serial, unsigned int reg) {
 	return readl(serial->regs + (reg*4));
 }
 
-static void write_reg (struct serial_uart *serial, unsigned int reg, u32 val) {
+static inline void write_reg (struct serial_uart *serial, unsigned int reg, u32 val) {
 	writel(val, serial->regs + (reg*4));
 }
 
@@ -29,12 +32,28 @@ static void write_to_serial (struct serial_uart *serial, unsigned char val) {
 	write_reg(serial, UART_TX, val);
 }
 
+static ssize_t serial_read(struct file *file, char __user *data, size_t size, loff_t *offset) {
+	return -EINVAL;
+}
+
+static ssize_t serial_write(struct file *file, const char __user *data, size_t size, loff_t *offset) {
+	return -EINVAL;
+}
+
 static int serial_uart_probe(struct platform_device *pdev) {
 	int ret;
+
+	struct resource *res;
 
 	u32 uartclk, baud_divisor;
 
 	struct serial_uart *serial;
+
+	static const struct file_operations fops = {
+		.owner = THIS_MODULE,
+		.read = serial_read,
+		.write = serial_write,
+	};
 
 	serial = devm_kzalloc(&pdev->dev, sizeof(struct serial_uart), GFP_KERNEL);
 	if (!serial)
@@ -73,11 +92,37 @@ static int serial_uart_probe(struct platform_device *pdev) {
 
 	write_to_serial(serial, 'B');
 
+	platform_set_drvdata(pdev, serial);
+
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	if (!res) {
+		pm_runtime_disable(&pdev->dev);
+		dev_err(&pdev->dev, "couldn't find resource\n");
+		return -ENODEV;
+	}
+
+	serial->miscdev.name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "serial-\%x", res->start);
+	serial->miscdev.minor = MISC_DYNAMIC_MINOR;
+	serial->miscdev.fops = &fops;
+	serial->miscdev.mode = 0666;
+
+	ret = misc_register(&serial->miscdev);
+	if (ret) {
+		pm_runtime_disable(&pdev->dev);
+		dev_err(&pdev->dev, "failed to register with misc framework\n");
+		return ret;
+	}
+
 	return 0;
 }
 
 static void serial_uart_remove(struct platform_device *pdev) {
+	struct serial_uart *serial;
+
+	serial = platform_get_drvdata(pdev);
+
 	pm_runtime_disable(&pdev->dev);
+	misc_deregister(&serial->miscdev);
 }
 
 static const struct of_device_id serial_uart_dt_match[] = {
