@@ -3,10 +3,20 @@
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/platform_device.h>
+#include <linux/serial_reg.h>
+#include <linux/io.h> /* readl()/writel() */
 
 struct serial_uart {
 	void __iomem *regs;
 };
+
+static unsigned int reg_read (struct serial_uart *serial, unsigned int reg) {
+	return readl(serial->regs + (reg*4));
+}
+
+static void write_reg (struct serial_uart *serial, unsigned int reg, u32 val) {
+	writel(val, serial->regs + (reg*4));
+}
 
 static int serial_uart_probe(struct platform_device *pdev) {
 	struct serial_uart *serial;
