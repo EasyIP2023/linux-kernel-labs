@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
 
-#include <linux/init.h>
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/platform_device.h>
@@ -36,3 +35,4 @@ module_platform_driver(serial_uart_driver);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Underview");
+MODULE_DESCRIPTION("Serial Uart Driver Implementation");
