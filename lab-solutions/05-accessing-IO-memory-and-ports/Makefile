@@ -22,7 +22,7 @@ endif
 # then interpreted with KERNELRELEASE defined, so the kernel sees the obj-m
 # definition.
 
-all:
+all: dtb
 	$(MAKE) -C $(KSRC) M=$$PWD
 
 modules_install:
