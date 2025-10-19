@@ -39,8 +39,9 @@ static ssize_t serial_write(struct file *file, const char __user *data, size_t s
 
 	serial = container_of(file->private_data, struct serial_uart, miscdev);
 
-	if (size >= PAGE_SIZE)
+	if (size >= PAGE_SIZE) {
 		return -EINVAL;
+	}
 
 	/* Poll the Line Status Register (LSR) */
 	while (!reg_val) {
@@ -65,7 +66,7 @@ static ssize_t serial_write(struct file *file, const char __user *data, size_t s
 		}
 	}
 
-	return 0;
+	return size;
 }
 
 static int serial_uart_probe(struct platform_device *pdev) {
