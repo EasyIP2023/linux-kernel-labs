@@ -18,11 +18,13 @@ struct serial_uart {
 	struct miscdevice miscdev;
 };
 
-static inline unsigned int read_reg (struct serial_uart *serial, unsigned int reg) {
+static unsigned int read_reg (struct serial_uart *serial, unsigned int reg) {
+	usleep_range(50, 100);
 	return readl(serial->regs + (reg*4));
 }
 
-static inline void write_reg (struct serial_uart *serial, unsigned int reg, u32 val) {
+static void write_reg (struct serial_uart *serial, unsigned int reg, u32 val) {
+	usleep_range(50, 100);
 	writel(val, serial->regs + (reg*4));
 }
 
@@ -55,15 +57,10 @@ static ssize_t serial_write(struct file *file, const char __user *data, size_t s
 	}
 
 	for (s = 0; s < size; s++) {
-		usleep_range(50, 100);
-
 		buf = serial->buf[s];
 		write_reg(serial, UART_TX, (u32)buf);
-
-		if (buf == '\n') {
-			usleep_range(50, 100);
+		if (buf == '\n')
 			write_reg(serial, UART_TX, '\r');
-		}
 	}
 
 	return size;
