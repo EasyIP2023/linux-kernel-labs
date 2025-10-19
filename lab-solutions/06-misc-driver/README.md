@@ -1,4 +1,4 @@
-# Lab 5 Accessing I/O Memory and Ports
+# Lab 6: Output-only misc driver
 
 Directory provides patch for in-tree & out-of-tree compilation of the
 device tree and serial-uart kernel module. Add device tree for uart
@@ -7,6 +7,11 @@ processor so that pins 21,22 (uart 2) and pins 11,13 (uart 4) on
 Expansion Header P9 are utilized as uart pins.
 
 **Check Driver Syntax Follows Standards**
+
 ```sh
 $ ../../linux/scripts/checkpatch.pl --fix nunchuk.c
 ```
+
+**References**
+
+[Lammertbies Serial Uart](https://www.lammertbies.nl/comm/info/serial-uart)
