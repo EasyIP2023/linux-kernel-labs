@@ -12,9 +12,12 @@
 #include <linux/miscdevice.h>
 #include <linux/delay.h>
 
+#include "uapi/serial-uart.h"
+
 struct serial_uart {
 	void __iomem *regs;
 	char __user *buf;
+	long char_count;
 	struct miscdevice miscdev;
 };
 
@@ -28,11 +31,11 @@ static void write_reg (struct serial_uart *serial, unsigned int reg, u32 val) {
 	writel(val, serial->regs + (reg*4));
 }
 
-static ssize_t serial_read(struct file *file, char __user *data, size_t size, loff_t *offset) {
+static ssize_t serial_read (struct file *file, char __user *data, size_t size, loff_t *offset) {
 	return -EINVAL;
 }
 
-static ssize_t serial_write(struct file *file, const char __user *data, size_t size, loff_t *offset) {
+static ssize_t serial_write (struct file *file, const char __user *data, size_t size, loff_t *offset) {
 	int ret;
 	size_t s;
 	char buf;
@@ -59,14 +62,39 @@ static ssize_t serial_write(struct file *file, const char __user *data, size_t s
 	for (s = 0; s < size; s++) {
 		buf = serial->buf[s];
 		write_reg(serial, UART_TX, (u32)buf);
-		if (buf == '\n')
+		serial->char_count++;
+
+		if (buf == '\n') {
 			write_reg(serial, UART_TX, '\r');
+			serial->char_count++;
+		}
 	}
 
 	return size;
 }
 
-static int serial_uart_probe(struct platform_device *pdev) {
+static long serial_ioctl (struct file *file, unsigned int cmd, unsigned long data) {
+	long ret = 0;
+
+	struct serial_uart *serial;
+
+	serial = container_of(file->private_data, struct serial_uart, miscdev);
+
+	switch (cmd) {
+		case SERIAL_RESET_COUNTER:
+			serial->char_count = 0;
+			break;
+		case SERIAL_GET_COUNTER:
+			ret = serial->char_count;
+			break;
+		default:
+			return -EINVAL;
+	}
+
+	return ret;
+}
+
+static int serial_uart_probe (struct platform_device *pdev) {
 	int ret;
 
 	struct resource *res;
@@ -79,6 +107,7 @@ static int serial_uart_probe(struct platform_device *pdev) {
 		.owner = THIS_MODULE,
 		.read = serial_read,
 		.write = serial_write,
+		.unlocked_ioctl = serial_ioctl,
 	};
 
 	serial = devm_kzalloc(&pdev->dev, sizeof(struct serial_uart), GFP_KERNEL);
@@ -144,7 +173,7 @@ static int serial_uart_probe(struct platform_device *pdev) {
 	return 0;
 }
 
-static void serial_uart_remove(struct platform_device *pdev) {
+static void serial_uart_remove (struct platform_device *pdev) {
 	struct serial_uart *serial;
 
 	serial = platform_get_drvdata(pdev);
