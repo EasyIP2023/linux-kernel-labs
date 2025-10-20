@@ -17,7 +17,7 @@
 struct serial_uart {
 	void __iomem *regs;
 	char __user *buf;
-	long char_count;
+	size_t char_count;
 	struct miscdevice miscdev;
 };
 
@@ -73,8 +73,8 @@ static ssize_t serial_write (struct file *file, const char __user *data, size_t 
 	return size;
 }
 
-static long serial_ioctl (struct file *file, unsigned int cmd, unsigned long data) {
-	long ret = 0;
+static long serial_ioctl (struct file *file, unsigned int __user cmd, unsigned long __user data) {
+	int ret = 0;
 
 	struct serial_uart *serial;
 
@@ -85,13 +85,18 @@ static long serial_ioctl (struct file *file, unsigned int cmd, unsigned long dat
 			serial->char_count = 0;
 			break;
 		case SERIAL_GET_COUNTER:
-			ret = serial->char_count;
+		{
+			size_t __user *ubuf = (size_t *) data;
+			ret = copy_to_user(ubuf, &serial->char_count, sizeof(size_t));
+			if (ret)
+				return -EFAULT;
+		}
 			break;
 		default:
 			return -EINVAL;
 	}
 
-	return ret;
+	return 0;
 }
 
 static int serial_uart_probe (struct platform_device *pdev) {
