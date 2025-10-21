@@ -22,8 +22,7 @@ struct serial_uart {
 	struct miscdevice miscdev;
 };
 
-static unsigned int read_reg (struct serial_uart *serial, unsigned int reg) {
-	usleep_range(50, 100);
+static inline unsigned int read_reg (struct serial_uart *serial, unsigned int reg) {
 	return readl(serial->regs + (reg*4));
 }
 
@@ -101,7 +100,18 @@ static long serial_ioctl (struct file *file, unsigned int __user cmd, unsigned l
 }
 
 static irqreturn_t serial_interrupt (int irq, void *data) {
+	unsigned int reg_val;
+
+	struct serial_uart *serial = (struct serial_uart *) data;
+
+	/* Acknowledge Interrupt */
+	reg_val = read_reg(serial, UART_RX);
+	if (reg_val > 0) {
+		pr_info("Acknowledged interrupt\n");
+	}
+
 	pr_info("In interrupt context");
+
 	return IRQ_HANDLED;
 }
 
