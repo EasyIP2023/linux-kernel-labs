@@ -11,6 +11,7 @@
 #include <linux/uaccess.h>
 #include <linux/miscdevice.h>
 #include <linux/delay.h>
+#include <linux/interrupt.h>
 
 #include "uapi/serial-uart.h"
 
@@ -74,7 +75,7 @@ static ssize_t serial_write (struct file *file, const char __user *data, size_t 
 }
 
 static long serial_ioctl (struct file *file, unsigned int __user cmd, unsigned long __user data) {
-	int ret = 0;
+	int ret;
 
 	struct serial_uart *serial;
 
@@ -99,8 +100,13 @@ static long serial_ioctl (struct file *file, unsigned int __user cmd, unsigned l
 	return 0;
 }
 
+static irqreturn_t serial_interrupt (int irq, void *data) {
+	pr_info("In interrupt context");
+	return IRQ_HANDLED;
+}
+
 static int serial_uart_probe (struct platform_device *pdev) {
-	int ret;
+	int ret, irq_num;
 
 	struct resource *res;
 
@@ -122,10 +128,6 @@ static int serial_uart_probe (struct platform_device *pdev) {
 	serial->regs = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(serial->regs))
 		return PTR_ERR(serial->regs);
-
-	serial->buf = (char *) get_zeroed_page(GFP_USER);
-	if (!(serial->buf))
-		return -ENOMEM;
 
 	pm_runtime_enable(&pdev->dev);
 	pm_runtime_get_sync(&pdev->dev);
@@ -150,11 +152,18 @@ static int serial_uart_probe (struct platform_device *pdev) {
 	write_reg(serial, UART_DLM, (baud_divisor >> 8) & 0xff);
 	write_reg(serial, UART_LCR, UART_LCR_WLEN8);
 	write_reg(serial, UART_OMAP_MDR1, 0x00);
+	// Enable receiver data interrupt in the interrupt enable register
+	write_reg(serial, UART_IER, UART_IER_RDI);
 
 	/* Clear UART FIFOs */
 	write_reg(serial, UART_FCR, UART_FCR_CLEAR_RCVR | UART_FCR_CLEAR_XMIT);
 
 	platform_set_drvdata(pdev, serial);
+
+	/* Register with misc framework and create character device */
+	serial->buf = (char *) get_zeroed_page(GFP_USER);
+	if (!(serial->buf))
+		return -ENOMEM;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res) {
@@ -172,6 +181,20 @@ static int serial_uart_probe (struct platform_device *pdev) {
 	if (ret) {
 		pm_runtime_disable(&pdev->dev);
 		dev_err(&pdev->dev, "failed to register with misc framework\n");
+		return ret;
+	}
+
+	/* Register interrupt request handler */
+	irq_num = platform_get_irq(pdev, 0);
+	if (irq_num < 0)
+		return irq_num;
+
+	ret = devm_request_irq(&pdev->dev, irq_num,
+	                       serial_interrupt, 0,
+	                       pdev->name, serial);
+	if (ret) {
+		pm_runtime_disable(&pdev->dev);
+		dev_err(&pdev->dev, "failed to request IRQ\n");
 		return ret;
 	}
 
