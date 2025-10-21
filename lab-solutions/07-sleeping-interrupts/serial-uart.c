@@ -161,7 +161,7 @@ static int serial_uart_probe (struct platform_device *pdev) {
 	platform_set_drvdata(pdev, serial);
 
 	/* Register with misc framework and create character device */
-	serial->buf = (char *) get_zeroed_page(GFP_USER);
+	serial->buf = devm_kzalloc(&pdev->dev, PAGE_SIZE, GFP_USER);
 	if (!(serial->buf))
 		return -ENOMEM;
 
@@ -206,7 +206,6 @@ static void serial_uart_remove (struct platform_device *pdev) {
 
 	serial = platform_get_drvdata(pdev);
 
-	free_page((unsigned long)serial->buf);
 	pm_runtime_disable(&pdev->dev);
 	misc_deregister(&serial->miscdev);
 }
