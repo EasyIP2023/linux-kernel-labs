@@ -12,14 +12,18 @@
 #include <linux/miscdevice.h>
 #include <linux/delay.h>
 #include <linux/interrupt.h>
+#include <linux/wait.h>
 
 #include "uapi/serial-uart.h"
 
 struct serial_uart {
+	struct miscdevice miscdev;
 	void __iomem *regs;
 	char __user *buf;
 	size_t char_count;
-	struct miscdevice miscdev;
+	unsigned int buf_rd;
+	unsigned int buf_wr;
+	wait_queue_head_t wait;
 };
 
 static inline unsigned int read_reg (struct serial_uart *serial, unsigned int reg) {
@@ -32,7 +36,28 @@ static void write_reg (struct serial_uart *serial, unsigned int reg, u32 val) {
 }
 
 static ssize_t serial_read (struct file *file, char __user *data, size_t size, loff_t *offset) {
-	return -EINVAL;
+	int err;
+
+	struct serial_uart *serial;
+
+	serial = container_of(file->private_data, struct serial_uart, miscdev);
+
+	if (serial->buf_rd > serial->buf_wr)
+		serial->buf_rd = 0;
+
+	err = wait_event_interruptible(serial->wait,
+		serial->buf_rd != serial->buf_wr);
+	if (err)
+		return err;
+
+	err = copy_to_user(data, &(serial->buf[serial->buf_rd]),
+		(serial->buf_wr - serial->buf_rd));
+	if (err)
+		return -EFAULT;
+
+	serial->buf_rd = serial->buf_wr;
+
+	return size;
 }
 
 static ssize_t serial_write (struct file *file, const char __user *data, size_t size, loff_t *offset) {
@@ -68,6 +93,8 @@ static ssize_t serial_write (struct file *file, const char __user *data, size_t 
 			write_reg(serial, UART_TX, '\r');
 			serial->char_count++;
 		}
+
+		serial->buf[s] = 0;
 	}
 
 	return size;
@@ -107,10 +134,11 @@ static irqreturn_t serial_interrupt (int irq, void *data) {
 	/* Acknowledge Interrupt */
 	reg_val = read_reg(serial, UART_RX);
 	if (reg_val > 0) {
-		pr_info("Acknowledged interrupt\n");
-	}
+		serial->buf[serial->buf_wr] = reg_val;
+		serial->buf_wr = (serial->buf_wr + 1) % PAGE_SIZE;
 
-	pr_info("In interrupt context");
+		wake_up(&serial->wait);
+	}
 
 	return IRQ_HANDLED;
 }
@@ -207,6 +235,8 @@ static int serial_uart_probe (struct platform_device *pdev) {
 		dev_err(&pdev->dev, "failed to request IRQ\n");
 		return ret;
 	}
+
+	init_waitqueue_head(&serial->wait);
 
 	return 0;
 }
