@@ -36,7 +36,7 @@ static void write_reg (struct serial_uart *serial, unsigned int reg, u32 val) {
 }
 
 static ssize_t serial_read (struct file *file, char __user *data, size_t size, loff_t *offset) {
-	int err;
+	int err, bytes_to_copy;
 
 	struct serial_uart *serial;
 
@@ -50,14 +50,14 @@ static ssize_t serial_read (struct file *file, char __user *data, size_t size, l
 	if (err)
 		return err;
 
-	err = copy_to_user(data, &(serial->buf[serial->buf_rd]),
-		(serial->buf_wr - serial->buf_rd));
+	bytes_to_copy = serial->buf_wr - serial->buf_rd;
+	err = copy_to_user(data, &(serial->buf[serial->buf_rd]), bytes_to_copy);
 	if (err)
 		return -EFAULT;
 
 	serial->buf_rd = serial->buf_wr;
 
-	return size;
+	return bytes_to_copy;
 }
 
 static ssize_t serial_write (struct file *file, const char __user *data, size_t size, loff_t *offset) {
