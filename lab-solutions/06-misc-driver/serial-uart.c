@@ -22,7 +22,6 @@ struct serial_uart {
 };
 
 static unsigned int read_reg (struct serial_uart *serial, unsigned int reg) {
-	usleep_range(50, 100);
 	return readl(serial->regs + (reg*4));
 }
 
@@ -68,6 +67,8 @@ static ssize_t serial_write (struct file *file, const char __user *data, size_t 
 			write_reg(serial, UART_TX, '\r');
 			serial->char_count++;
 		}
+
+		serial->buf[s] = 0;
 	}
 
 	return size;
@@ -119,13 +120,13 @@ static int serial_uart_probe (struct platform_device *pdev) {
 	if (!serial)
 		return -ENOMEM;
 
+	serial->buf = devm_kzalloc(&pdev->dev, PAGE_SIZE, GFP_USER);
+	if (!(serial->buf))
+		return -ENOMEM;
+
 	serial->regs = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(serial->regs))
 		return PTR_ERR(serial->regs);
-
-	serial->buf = (char *) get_zeroed_page(GFP_USER);
-	if (!(serial->buf))
-		return -ENOMEM;
 
 	pm_runtime_enable(&pdev->dev);
 	pm_runtime_get_sync(&pdev->dev);
@@ -183,7 +184,6 @@ static void serial_uart_remove (struct platform_device *pdev) {
 
 	serial = platform_get_drvdata(pdev);
 
-	free_page((unsigned long)serial->buf);
 	pm_runtime_disable(&pdev->dev);
 	misc_deregister(&serial->miscdev);
 }
