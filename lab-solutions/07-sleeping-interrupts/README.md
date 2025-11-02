@@ -24,9 +24,8 @@ $ cp -av lab-solutions/07-sleeping-interrupts/userspace/build/serial-* modules/n
 
 ```s
 $ modprobe serial-uart
-$ echo "cool beans fire nice" > /dev/serial-481a8000
-$ ./serial-get-counter /dev/serial-481a8000
-$ ./serial-reset-counter /dev/serial-481a8000
+$ cat < /dev/serial-481a8000
+# Type in serial terminal connected to USB serial device
 ```
 
 **Check Driver Syntax Follows Standards**
