@@ -16,14 +16,16 @@
 
 #include "uapi/serial-uart.h"
 
+#define BUFF_SZ (1<<9)
+
 struct serial_uart {
 	struct miscdevice miscdev;
 	void __iomem *regs;
-	char __user *buf;
 	size_t char_count;
 	unsigned int buf_rd;
 	unsigned int buf_wr;
 	wait_queue_head_t wait;
+	char __user buf[BUFF_SZ];
 };
 
 static inline unsigned int read_reg (struct serial_uart *serial, unsigned int reg) {
@@ -63,13 +65,13 @@ static ssize_t serial_read (struct file *file, char __user *data, size_t size, l
 static ssize_t serial_write (struct file *file, const char __user *data, size_t size, loff_t *offset) {
 	int ret;
 	size_t s;
-	char buf;
 	unsigned int reg_val = 0;
 	struct serial_uart *serial;
+	char buf, __user wr_buf[BUFF_SZ];
 
 	serial = container_of(file->private_data, struct serial_uart, miscdev);
 
-	if (size >= PAGE_SIZE) {
+	if (size >= BUFF_SZ) {
 		return -EINVAL;
 	}
 
@@ -79,13 +81,13 @@ static ssize_t serial_write (struct file *file, const char __user *data, size_t 
 		cpu_relax();
 	}
 
-	ret = copy_from_user(serial->buf, (char*) data, size);
+	ret = copy_from_user(wr_buf, (char*) data, size);
 	if (ret) {
 		return -EFAULT;
 	}
 
 	for (s = 0; s < size; s++) {
-		buf = serial->buf[s];
+		buf = wr_buf[s];
 		write_reg(serial, UART_TX, (u32)buf);
 		serial->char_count++;
 
@@ -93,8 +95,6 @@ static ssize_t serial_write (struct file *file, const char __user *data, size_t 
 			write_reg(serial, UART_TX, '\r');
 			serial->char_count++;
 		}
-
-		serial->buf[s] = 0;
 	}
 
 	return size;
@@ -199,10 +199,6 @@ static int serial_uart_probe (struct platform_device *pdev) {
 	platform_set_drvdata(pdev, serial);
 
 	/* Register with misc framework and create character device */
-	serial->buf = devm_kzalloc(&pdev->dev, PAGE_SIZE, GFP_USER);
-	if (!(serial->buf))
-		return -ENOMEM;
-
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res) {
 		pm_runtime_disable(&pdev->dev);
