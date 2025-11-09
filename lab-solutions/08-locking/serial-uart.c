@@ -13,10 +13,13 @@
 #include <linux/delay.h>
 #include <linux/interrupt.h>
 #include <linux/wait.h>
+#include <linux/spinlock.h>
 
 #include "uapi/serial-uart.h"
 
-#define BUFF_SZ 512
+#define BUFF_SZ (1<<9)
+
+static DEFINE_SPINLOCK(serial_lock);
 
 struct serial_uart {
 	struct miscdevice miscdev;
@@ -53,7 +56,10 @@ static ssize_t serial_read (struct file *file, char __user *data, size_t size, l
 		return err;
 
 	bytes_to_copy = serial->buf_wr - serial->buf_rd;
+
+	spin_lock(&serial_lock);
 	err = copy_to_user(data, &(serial->buf[serial->buf_rd]), bytes_to_copy);
+	spin_unlock(&serial_lock);
 	if (err)
 		return -EFAULT;
 
@@ -127,11 +133,12 @@ static long serial_ioctl (struct file *file, unsigned int __user cmd, unsigned l
 }
 
 static irqreturn_t serial_interrupt (int irq, void *data) {
-	unsigned int reg_val;
+	unsigned int reg_val, flags;
 
 	struct serial_uart *serial = (struct serial_uart *) data;
 
 	/* Acknowledge Interrupt */
+	spin_lock_irqsave(&serial_lock, flags);
 	reg_val = read_reg(serial, UART_RX);
 	if (reg_val > 0) {
 		serial->buf[serial->buf_wr] = reg_val;
@@ -139,6 +146,7 @@ static irqreturn_t serial_interrupt (int irq, void *data) {
 
 		wake_up(&serial->wait);
 	}
+	spin_unlock_irqrestore(&serial_lock, flags);
 
 	return IRQ_HANDLED;
 }
