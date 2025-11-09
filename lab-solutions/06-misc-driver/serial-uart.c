@@ -14,11 +14,12 @@
 
 #include "uapi/serial-uart.h"
 
+#define BUFF_SZ (1<<9)
+
 struct serial_uart {
-	void __iomem *regs;
-	char __user *buf;
-	size_t char_count;
 	struct miscdevice miscdev;
+	void __iomem *regs;
+	size_t char_count;
 };
 
 static unsigned int read_reg (struct serial_uart *serial, unsigned int reg) {
@@ -37,13 +38,13 @@ static ssize_t serial_read (struct file *file, char __user *data, size_t size, l
 static ssize_t serial_write (struct file *file, const char __user *data, size_t size, loff_t *offset) {
 	int ret;
 	size_t s;
-	char buf;
 	unsigned int reg_val = 0;
 	struct serial_uart *serial;
+	char buf, __user wr_buf[BUFF_SZ];
 
 	serial = container_of(file->private_data, struct serial_uart, miscdev);
 
-	if (size >= PAGE_SIZE) {
+	if (size >= BUFF_SZ) {
 		return -EINVAL;
 	}
 
@@ -53,13 +54,13 @@ static ssize_t serial_write (struct file *file, const char __user *data, size_t 
 		cpu_relax();
 	}
 
-	ret = copy_from_user(serial->buf, (char*) data, size);
+	ret = copy_from_user(wr_buf, (char*) data, size);
 	if (ret) {
 		return -EFAULT;
 	}
 
 	for (s = 0; s < size; s++) {
-		buf = serial->buf[s];
+		buf = wr_buf[s];
 		write_reg(serial, UART_TX, (u32)buf);
 		serial->char_count++;
 
@@ -67,8 +68,6 @@ static ssize_t serial_write (struct file *file, const char __user *data, size_t 
 			write_reg(serial, UART_TX, '\r');
 			serial->char_count++;
 		}
-
-		serial->buf[s] = 0;
 	}
 
 	return size;
@@ -118,10 +117,6 @@ static int serial_uart_probe (struct platform_device *pdev) {
 
 	serial = devm_kzalloc(&pdev->dev, sizeof(struct serial_uart), GFP_KERNEL);
 	if (!serial)
-		return -ENOMEM;
-
-	serial->buf = devm_kzalloc(&pdev->dev, PAGE_SIZE, GFP_USER);
-	if (!(serial->buf))
 		return -ENOMEM;
 
 	serial->regs = devm_platform_ioremap_resource(pdev, 0);
