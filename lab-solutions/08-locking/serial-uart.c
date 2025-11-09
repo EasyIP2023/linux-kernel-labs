@@ -19,14 +19,13 @@
 
 #define BUFF_SZ (1<<9)
 
-static DEFINE_SPINLOCK(serial_lock);
-
 struct serial_uart {
 	struct miscdevice miscdev;
 	void __iomem *regs;
 	size_t char_count;
 	unsigned int buf_rd;
 	unsigned int buf_wr;
+	spinlock_t lock;
 	wait_queue_head_t wait;
 	char __user buf[BUFF_SZ];
 };
@@ -57,9 +56,9 @@ static ssize_t serial_read (struct file *file, char __user *data, size_t size, l
 
 	bytes_to_copy = serial->buf_wr - serial->buf_rd;
 
-	spin_lock(&serial_lock);
+	spin_lock(&serial->lock);
 	err = copy_to_user(data, &(serial->buf[serial->buf_rd]), bytes_to_copy);
-	spin_unlock(&serial_lock);
+	spin_unlock(&serial->lock);
 	if (err)
 		return -EFAULT;
 
@@ -138,7 +137,7 @@ static irqreturn_t serial_interrupt (int irq, void *data) {
 	struct serial_uart *serial = (struct serial_uart *) data;
 
 	/* Acknowledge Interrupt */
-	spin_lock_irqsave(&serial_lock, flags);
+	spin_lock_irqsave(&serial->lock, flags);
 	reg_val = read_reg(serial, UART_RX);
 	if (reg_val > 0) {
 		serial->buf[serial->buf_wr] = reg_val;
@@ -146,7 +145,7 @@ static irqreturn_t serial_interrupt (int irq, void *data) {
 
 		wake_up(&serial->wait);
 	}
-	spin_unlock_irqrestore(&serial_lock, flags);
+	spin_unlock_irqrestore(&serial->lock, flags);
 
 	return IRQ_HANDLED;
 }
@@ -240,6 +239,7 @@ static int serial_uart_probe (struct platform_device *pdev) {
 		return ret;
 	}
 
+	spin_lock_init(&serial->lock);
 	init_waitqueue_head(&serial->wait);
 
 	return 0;
