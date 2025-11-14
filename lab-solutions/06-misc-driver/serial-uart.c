@@ -99,6 +99,13 @@ static long serial_ioctl (struct file *file, unsigned int __user cmd, unsigned l
 	return 0;
 }
 
+static const struct file_operations fops = {
+	.owner = THIS_MODULE,
+	.read = serial_read,
+	.write = serial_write,
+	.unlocked_ioctl = serial_ioctl,
+};
+
 static int serial_uart_probe (struct platform_device *pdev) {
 	int ret;
 
@@ -107,13 +114,6 @@ static int serial_uart_probe (struct platform_device *pdev) {
 	u32 uartclk, baud_divisor;
 
 	struct serial_uart *serial;
-
-	static const struct file_operations fops = {
-		.owner = THIS_MODULE,
-		.read = serial_read,
-		.write = serial_write,
-		.unlocked_ioctl = serial_ioctl,
-	};
 
 	serial = devm_kzalloc(&pdev->dev, sizeof(struct serial_uart), GFP_KERNEL);
 	if (!serial)
